@@ -675,7 +675,10 @@ f_A_height_plot_comb <- function(l_pred,
                      filter(height %in% sel_height) %>% 
                      rowwise() %>%
                      mutate(height_cat = paste0("Q", quantiles[which(sel_height == height)])) %>% 
-                     ungroup()) %>% 
+                     ungroup() |> 
+                     mutate(height_cat = factor(height_cat, levels = unique(height_cat),
+                                                labels = paste0(unique(height_cat), 
+                                                                "\n(   ", round(sel_height), "m)")))) %>% 
     bind_rows(.id = "Trait") %>% 
     mutate(Trait = factor(Trait, levels = names(l_pred)),
            name = name)
