@@ -674,8 +674,11 @@ f_A_height_plot_comb <- function(l_pred,
                    function(x) x %>% 
                      filter(height %in% sel_height) %>% 
                      rowwise() %>%
-                     mutate(height_cat = paste0("Q", quantiles[which(sel_height == height)])) %>% 
-                     ungroup()) %>% 
+                     mutate(height_cat = paste0("Q-", quantiles[which(sel_height == height)] * 100, "%")) %>% 
+                     ungroup() |> 
+                     mutate(height_cat = factor(height_cat, levels = unique(height_cat),
+                                                labels = paste0(unique(height_cat), 
+                                                                "\n(   ", round(sel_height), "m)")))) %>% 
     bind_rows(.id = "Trait") %>% 
     mutate(Trait = factor(Trait, levels = names(l_pred)),
            name = name)
@@ -2346,6 +2349,7 @@ ggsave("Output/Figures/Incr_decr_mass.pdf", width = 90, height = 195,
 
 p_legend <- cowplot::get_legend(f_A_height_plot_comb(list(small = l_abu_A_small$l_pred_fe$`A:height`),
                                                      response = "abu_tot") +
+                                  guides(colour = guide_legend(reverse = T)) +
                                   theme(legend.title = element_text(size = v_textsize["legend.title"]),
                                         legend.text = element_text(size = v_textsize["axis.text"])))
 p_empty <- ggplot() + theme_nothing()
