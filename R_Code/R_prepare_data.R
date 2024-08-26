@@ -10,8 +10,24 @@ library(tidyverse); theme_set(theme_classic())
 ################################################################################.
 
 # moth records data, available from GBIF (downloaded as Darwin Core Archive)
+# https://doi.org/10.15468/dl.gcagva
 d_moths <- data.table::fread("Data/GBIF/occurrence.txt", header = T)
 d_moths <- d_moths |> 
+  # correct few details that differ from the dataset used for the analyses
+  mutate(locality = ifelse(gbifID %in% c(3002611147, 3003135068, 3003121096),
+                           "Meride, Fontana", locality),
+         year = ifelse(gbifID == 3003041056, 2010, year),
+         year = ifelse(gbifID == 4923547328, 2016, year),
+         day = ifelse(gbifID == 3002595452, 9, day),
+         taxonID = ifelse(gbifID %in% c(4906151261, 4906136165), 
+                          "infospecies.ch:infofauna:32538", taxonID),
+         taxonID = ifelse(gbifID == 3122744392, 
+                          "infospecies.ch:infofauna:32183", taxonID),
+         samplingEffort = ifelse(locality == "Ins, Landwirtschaftliche Schule Seeland" &
+                                   year == 1979, "LF /80 MLL /1979:6.5.-24.11 /1 /80MLL /1979_6 /NA",
+                                 samplingEffort),
+         individualCount = ifelse(gbifID %in% c(3003091312, 3002794229),
+                                  1, individualCount)) |> 
   select(A = year, M = month, J = day, active_hours = sampleSizeValue,
          DETAILS = samplingEffort, LOC = locality, taxonID, individualCount)
 
@@ -22,12 +38,16 @@ d_std <- read.table("Data/d_taxonomy.txt", header = T)
 d_samplings <- read.table("Data/d_samplings.txt",
                           header = T)
 
+# nights in which nothing was caught (missing from GBIF data)
+d_nullnights <- read.table("Data/d_nullnights.txt", header = T) |> 
+  mutate(Samplingdate = as.Date(Samplingdate))
+
 # temperature and precipitation data per night and LOC
 # based on data from https://www.meteoswiss.admin.ch
 # variables 'TabsD' and 'RhiresD' on WGS84 grid
 d_weather <- read.table("Data/d_weather.txt", header = T) |> 
   mutate(Samplingdate = as.Date(Samplingdate,
-                                format = "%d-%m-%Y"))
+                                format = "%Y-%m-%d"))
 # contains columns LOC (locality ID), Samplingdate, 
 # T_2day (average temperature over two days), P_2day (precipitation sum over two days)
 
@@ -210,12 +230,13 @@ for (i in seq_len(nrow(d_samplings))) {
   }
 }
 
+
+# add null nights (nights in which nothing was caught) -------------------------.
+d_samplingdates <- d_samplingdates |> 
+  bind_rows(d_nullnights |> select(-active_hours))
+
 d_samplingdates <- d_samplingdates %>% 
   mutate(yday = yday(Samplingdate))
-
-# Exclude zeronights
-d_moths <- d_moths %>% 
-  filter(CODE != "RIEN")
 
 # calculate stretches of zeronights --------------------------------------------.
 
@@ -258,7 +279,12 @@ d_samplingdates <- d_tmp %>%
 d_samplingdates <- d_samplingdates |> 
   left_join(d_moths |> 
               select(LOC, Samplingdate, active_hours) |> 
-              distinct(),
+              distinct() |> 
+              group_by(LOC, Samplingdate) |> 
+              filter(!(n() > 1 & any(!is.na(active_hours)) & is.na(active_hours))) |> 
+              ungroup() |> 
+              bind_rows(d_nullnights |> 
+                          select(LOC, Samplingdate, active_hours)),
             by = c("LOC", "Samplingdate"),
             relationship = c("one-to-one")) 
 
@@ -270,7 +296,7 @@ d_mod <-
   mutate(visit_ID = paste(LOC, A, yday)) %>%
   left_join(d_mass, by = "Name_std",
             relationship = "many-to-one") |> 
-  mutate(mass_sum = individualCount * mass) |> 
+  mutate(mass_sum = individualCount * mass / 1000) |> 
   group_by(LOC, visit_ID, A, yday) %>%
   summarise(abu_tot = sum(individualCount, na.rm = T),
             sric = length(unique(Name_std)),

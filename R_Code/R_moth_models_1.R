@@ -95,12 +95,12 @@ f_analysis_LU <- function(formula, data_z, data, scalings,
   # run model
   
   if (family == "zero_inflated_negbinomial"){
-    mod <- stan(file = "Stan_splines/Stan_nb_spline_s2p1_r4.stan",
+    mod <- stan(file = "Stan_Code/Stan_nb_spline_s2p1_r4.stan",
                 data = l_data,
                 chains = 4, cores = 4,
                 iter = iter)
   } else if (family == "hurdle_gamma"){
-    mod <- stan(file = "Stan_splines/Stan_hg_spline_s2p1_r4.stan",
+    mod <- stan(file = "Stan_Code/Stan_hg_spline_s2p1_r4.stan",
                 data = l_data,
                 chains = 4, cores = 4,
                 iter = iter)
@@ -329,8 +329,8 @@ f_pred_fixed_diff <- function(fit, data, scalings, formula = NULL) {
       C(bulbtype, "contr.sum") +
       n_trap +
       C(sample_previous, "contr.sum") +
-      (1 | gr) +
-      (1 | trap_ID) +
+      (1 | spattemp_cluster) +
+      (1 | LOC) +
       (1 | night_ID) +
       (1 | trap_ID_A)
   }
@@ -494,8 +494,8 @@ f_pred_fixed_diff_specific <- function(fit, data, scalings, formula = NULL,
       C(bulbtype, "contr.sum") +
       n_trap +
       C(sample_previous, "contr.sum") +
-      (1 | gr) +
-      (1 | trap_ID) +
+      (1 | spattemp_cluster) +
+      (1 | LOC) +
       (1 | night_ID) +
       (1 | trap_ID_A)
   }
@@ -599,8 +599,8 @@ f_pred_smooths_diff <- function(fit, data, scalings, formula = NULL) {
       C(bulbtype, "contr.sum") +
       n_trap +
       C(sample_previous, "contr.sum") +
-      (1 | gr) +
-      (1 | trap_ID) +
+      (1 | spattemp_cluster) +
+      (1 | LOC) +
       (1 | night_ID) +
       (1 | trap_ID_A)
   }
@@ -958,15 +958,15 @@ l_abu_LU_500 <- f_analysis_LU(formula = abu_tot ~
                                 C(bulbtype, "contr.sum") +
                                 n_trap +
                                 C(sample_previous, "contr.sum") +
-                                (1 | gr) +
-                                (1 | trap_ID) +
+                                (1 | spattemp_cluster) +
+                                (1 | LOC) +
                                 (1 | night_ID) +
                                 (1 | trap_ID_A),
                               data_z = d_mod_z,
                               data = d_mod,
                               scalings = filter(d_scalings, data == "full"),
                               family = "zero_inflated_negbinomial",
-                              hours_sel = which(d_mod_z$traptype == "p" & !d_mod_z$estimate),
+                              hours_sel = which(d_mod_z$traptype == "p" & d_mod_z$hours_data),
                               iter = n_iter, seed = 923,
                               LU_vars = c("Forest" = "prop_forest_500",
                                           "Grassland" = "prop_grassland_500",
@@ -981,15 +981,15 @@ l_ric_LU_500 <- f_analysis_LU(formula = sric ~
                                 C(bulbtype, "contr.sum") +
                                 n_trap +
                                 C(sample_previous, "contr.sum") +
-                                (1 | gr) +
-                                (1 | trap_ID) +
+                                (1 | spattemp_cluster) +
+                                (1 | LOC) +
                                 (1 | night_ID) +
                                 (1 | trap_ID_A),
                               data_z = d_mod_z,
                               data = d_mod,
                               scalings = filter(d_scalings, data == "full"),
                               family = "zero_inflated_negbinomial",
-                              hours_sel = which(d_mod_z$traptype == "p" & !d_mod_z$estimate),
+                              hours_sel = which(d_mod_z$traptype == "p" & d_mod_z$hours_data),
                               iter = n_iter, seed = 87127,
                               LU_vars = c("Forest" = "prop_forest_500",
                                           "Grassland" = "prop_grassland_500",
@@ -1004,15 +1004,15 @@ l_mass_LU_500 <- f_analysis_LU(formula = mass_tot ~
                                 C(bulbtype, "contr.sum") +
                                 n_trap +
                                 C(sample_previous, "contr.sum") +
-                                (1 | gr) +
-                                (1 | trap_ID) +
+                                (1 | spattemp_cluster) +
+                                (1 | LOC) +
                                 (1 | night_ID) +
                                 (1 | trap_ID_A),
                               data_z = d_mod_z,
                               data = d_mod,
                               scalings = filter(d_scalings, data == "full"),
                               family = "hurdle_gamma",
-                              hours_sel = which(d_mod_z$traptype == "p" & !d_mod_z$estimate),
+                              hours_sel = which(d_mod_z$traptype == "p" & d_mod_z$hours_data),
                               iter = n_iter, seed = 1411,
                               LU_vars = c("Forest" = "prop_forest_500",
                                           "Grassland" = "prop_grassland_500",
@@ -1031,8 +1031,8 @@ l_abu_LU_egg <- f_analysis_LU(formula = abu_tot ~
                                 C(bulbtype, "contr.sum") +
                                 n_trap +
                                 C(sample_previous, "contr.sum") +
-                                (1 | gr) +
-                                (1 | trap_ID) +
+                                (1 | spattemp_cluster) +
+                                (1 | LOC) +
                                 (1 | night_ID) +
                                 (1 | trap_ID_A),
                               data_z = d_mod_hib_z %>% filter(overwintering_stage == "egg"),
@@ -1040,7 +1040,7 @@ l_abu_LU_egg <- f_analysis_LU(formula = abu_tot ~
                               scalings = filter(d_scalings, data == "full"),
                               family = "zero_inflated_negbinomial",
                               hours_sel = which(d_mod_hib_z$traptype[d_mod_hib_z$overwintering_stage == "egg"] == "p" &
-                                                  !d_mod_hib_z$estimate[d_mod_hib_z$overwintering_stage == "egg"]),
+                                                  d_mod_hib_z$hours_data[d_mod_hib_z$overwintering_stage == "egg"]),
                               iter = n_iter, seed = 897444,
                               LU_vars = c("Forest" = "prop_forest_500",
                                           "Grassland" = "prop_grassland_500",
@@ -1053,8 +1053,8 @@ l_abu_LU_larva <- f_analysis_LU(formula = abu_tot ~
                                 C(bulbtype, "contr.sum") +
                                 n_trap +
                                 C(sample_previous, "contr.sum") +
-                                (1 | gr) +
-                                (1 | trap_ID) +
+                                (1 | spattemp_cluster) +
+                                (1 | LOC) +
                                 (1 | night_ID) +
                                 (1 | trap_ID_A),
                               data_z = d_mod_hib_z %>% filter(overwintering_stage == "larva"),
@@ -1062,7 +1062,7 @@ l_abu_LU_larva <- f_analysis_LU(formula = abu_tot ~
                               scalings = filter(d_scalings, data == "full"),
                               family = "zero_inflated_negbinomial",
                               hours_sel = which(d_mod_hib_z$traptype[d_mod_hib_z$overwintering_stage == "larva"] == "p" &
-                                                  !d_mod_hib_z$estimate[d_mod_hib_z$overwintering_stage == "larva"]),
+                                                  d_mod_hib_z$hours_data[d_mod_hib_z$overwintering_stage == "larva"]),
                               iter = n_iter, seed = 913,
                               LU_vars = c("Forest" = "prop_forest_500",
                                           "Grassland" = "prop_grassland_500",
@@ -1075,8 +1075,8 @@ l_abu_LU_pupa <- f_analysis_LU(formula = abu_tot ~
                                 C(bulbtype, "contr.sum") +
                                 n_trap +
                                 C(sample_previous, "contr.sum") +
-                                (1 | gr) +
-                                (1 | trap_ID) +
+                                (1 | spattemp_cluster) +
+                                (1 | LOC) +
                                 (1 | night_ID) +
                                 (1 | trap_ID_A),
                               data_z = d_mod_hib_z %>% filter(overwintering_stage == "pupa"),
@@ -1084,7 +1084,7 @@ l_abu_LU_pupa <- f_analysis_LU(formula = abu_tot ~
                               scalings = filter(d_scalings, data == "full"),
                               family = "zero_inflated_negbinomial",
                               hours_sel = which(d_mod_hib_z$traptype[d_mod_hib_z$overwintering_stage == "pupa"] == "p" &
-                                                  !d_mod_hib_z$estimate[d_mod_hib_z$overwintering_stage == "pupa"]),
+                                                  d_mod_hib_z$hours_data[d_mod_hib_z$overwintering_stage == "pupa"]),
                               iter = n_iter, seed = 817,
                               LU_vars = c("Forest" = "prop_forest_500",
                                           "Grassland" = "prop_grassland_500",
@@ -1097,8 +1097,8 @@ l_abu_LU_adult <- f_analysis_LU(formula = abu_tot ~
                                 C(bulbtype, "contr.sum") +
                                 n_trap +
                                 C(sample_previous, "contr.sum") +
-                                (1 | gr) +
-                                (1 | trap_ID) +
+                                (1 | spattemp_cluster) +
+                                (1 | LOC) +
                                 (1 | night_ID) +
                                 (1 | trap_ID_A),
                               data_z = d_mod_hib_z %>% filter(overwintering_stage == "adult"),
@@ -1106,7 +1106,7 @@ l_abu_LU_adult <- f_analysis_LU(formula = abu_tot ~
                               scalings = filter(d_scalings, data == "full"),
                               family = "zero_inflated_negbinomial",
                               hours_sel = which(d_mod_hib_z$traptype[d_mod_hib_z$overwintering_stage == "adult"] == "p" &
-                                                  !d_mod_hib_z$estimate[d_mod_hib_z$overwintering_stage == "adult"]),
+                                                  d_mod_hib_z$hours_data[d_mod_hib_z$overwintering_stage == "adult"]),
                               iter = n_iter, seed = 1253,
                               LU_vars = c("Forest" = "prop_forest_500",
                                           "Grassland" = "prop_grassland_500",
@@ -1121,8 +1121,8 @@ l_ric_LU_egg <- f_analysis_LU(formula = sric ~
                                 C(bulbtype, "contr.sum") +
                                 n_trap +
                                 C(sample_previous, "contr.sum") +
-                                (1 | gr) +
-                                (1 | trap_ID) +
+                                (1 | spattemp_cluster) +
+                                (1 | LOC) +
                                 (1 | night_ID) +
                                 (1 | trap_ID_A),
                               data_z = d_mod_hib_z %>% filter(overwintering_stage == "egg"),
@@ -1130,7 +1130,7 @@ l_ric_LU_egg <- f_analysis_LU(formula = sric ~
                               scalings = filter(d_scalings, data == "full"),
                               family = "zero_inflated_negbinomial",
                               hours_sel = which(d_mod_hib_z$traptype[d_mod_hib_z$overwintering_stage == "egg"] == "p" &
-                                                  !d_mod_hib_z$estimate[d_mod_hib_z$overwintering_stage == "egg"]),
+                                                  d_mod_hib_z$hours_data[d_mod_hib_z$overwintering_stage == "egg"]),
                               iter = n_iter, seed = 183456,
                               LU_vars = c("Forest" = "prop_forest_500",
                                           "Grassland" = "prop_grassland_500",
@@ -1143,8 +1143,8 @@ l_ric_LU_larva <- f_analysis_LU(formula = sric ~
                                 C(bulbtype, "contr.sum") +
                                 n_trap +
                                 C(sample_previous, "contr.sum") +
-                                (1 | gr) +
-                                (1 | trap_ID) +
+                                (1 | spattemp_cluster) +
+                                (1 | LOC) +
                                 (1 | night_ID) +
                                 (1 | trap_ID_A),
                               data_z = d_mod_hib_z %>% filter(overwintering_stage == "larva"),
@@ -1152,7 +1152,7 @@ l_ric_LU_larva <- f_analysis_LU(formula = sric ~
                               scalings = filter(d_scalings, data == "full"),
                               family = "zero_inflated_negbinomial",
                               hours_sel = which(d_mod_hib_z$traptype[d_mod_hib_z$overwintering_stage == "larva"] == "p" &
-                                                  !d_mod_hib_z$estimate[d_mod_hib_z$overwintering_stage == "larva"]),
+                                                  d_mod_hib_z$hours_data[d_mod_hib_z$overwintering_stage == "larva"]),
                               iter = n_iter, seed = 512344,
                               LU_vars = c("Forest" = "prop_forest_500",
                                           "Grassland" = "prop_grassland_500",
@@ -1165,8 +1165,8 @@ l_ric_LU_pupa <- f_analysis_LU(formula = sric ~
                                 C(bulbtype, "contr.sum") +
                                 n_trap +
                                 C(sample_previous, "contr.sum") +
-                                (1 | gr) +
-                                (1 | trap_ID) +
+                                (1 | spattemp_cluster) +
+                                (1 | LOC) +
                                 (1 | night_ID) +
                                 (1 | trap_ID_A),
                               data_z = d_mod_hib_z %>% filter(overwintering_stage == "pupa"),
@@ -1174,7 +1174,7 @@ l_ric_LU_pupa <- f_analysis_LU(formula = sric ~
                               scalings = filter(d_scalings, data == "full"),
                               family = "zero_inflated_negbinomial",
                               hours_sel = which(d_mod_hib_z$traptype[d_mod_hib_z$overwintering_stage == "pupa"] == "p" &
-                                                  !d_mod_hib_z$estimate[d_mod_hib_z$overwintering_stage == "pupa"]),
+                                                  d_mod_hib_z$hours_data[d_mod_hib_z$overwintering_stage == "pupa"]),
                               iter = n_iter, seed = 51,
                               LU_vars = c("Forest" = "prop_forest_500",
                                           "Grassland" = "prop_grassland_500",
@@ -1187,8 +1187,8 @@ l_ric_LU_adult <- f_analysis_LU(formula = sric ~
                                 C(bulbtype, "contr.sum") +
                                 n_trap +
                                 C(sample_previous, "contr.sum") +
-                                (1 | gr) +
-                                (1 | trap_ID) +
+                                (1 | spattemp_cluster) +
+                                (1 | LOC) +
                                 (1 | night_ID) +
                                 (1 | trap_ID_A),
                               data_z = d_mod_hib_z %>% filter(overwintering_stage == "adult"),
@@ -1196,7 +1196,7 @@ l_ric_LU_adult <- f_analysis_LU(formula = sric ~
                               scalings = filter(d_scalings, data == "full"),
                               family = "zero_inflated_negbinomial",
                               hours_sel = which(d_mod_hib_z$traptype[d_mod_hib_z$overwintering_stage == "adult"] == "p" &
-                                                  !d_mod_hib_z$estimate[d_mod_hib_z$overwintering_stage == "adult"]),
+                                                  d_mod_hib_z$hours_data[d_mod_hib_z$overwintering_stage == "adult"]),
                               iter = n_iter, seed = 662,
                               LU_vars = c("Forest" = "prop_forest_500",
                                           "Grassland" = "prop_grassland_500",
@@ -1210,8 +1210,8 @@ l_mass_LU_egg <- f_analysis_LU(formula = mass_tot ~
                                 C(bulbtype, "contr.sum") +
                                 n_trap +
                                 C(sample_previous, "contr.sum") +
-                                (1 | gr) +
-                                (1 | trap_ID) +
+                                (1 | spattemp_cluster) +
+                                (1 | LOC) +
                                 (1 | night_ID) +
                                 (1 | trap_ID_A),
                               data_z = d_mod_hib_z %>% filter(overwintering_stage == "egg"),
@@ -1219,7 +1219,7 @@ l_mass_LU_egg <- f_analysis_LU(formula = mass_tot ~
                               scalings = filter(d_scalings, data == "full"),
                               family = "hurdle_gamma",
                               hours_sel = which(d_mod_hib_z$traptype[d_mod_hib_z$overwintering_stage == "egg"] == "p" &
-                                                  !d_mod_hib_z$estimate[d_mod_hib_z$overwintering_stage == "egg"]),
+                                                  d_mod_hib_z$hours_data[d_mod_hib_z$overwintering_stage == "egg"]),
                               iter = n_iter, seed = 918,
                               LU_vars = c("Forest" = "prop_forest_500",
                                           "Grassland" = "prop_grassland_500",
@@ -1232,8 +1232,8 @@ l_mass_LU_larva <- f_analysis_LU(formula = mass_tot ~
                                 C(bulbtype, "contr.sum") +
                                 n_trap +
                                 C(sample_previous, "contr.sum") +
-                                (1 | gr) +
-                                (1 | trap_ID) +
+                                (1 | spattemp_cluster) +
+                                (1 | LOC) +
                                 (1 | night_ID) +
                                 (1 | trap_ID_A),
                               data_z = d_mod_hib_z %>% filter(overwintering_stage == "larva"),
@@ -1241,7 +1241,7 @@ l_mass_LU_larva <- f_analysis_LU(formula = mass_tot ~
                               scalings = filter(d_scalings, data == "full"),
                               family = "hurdle_gamma",
                               hours_sel = which(d_mod_hib_z$traptype[d_mod_hib_z$overwintering_stage == "larva"] == "p" &
-                                                  !d_mod_hib_z$estimate[d_mod_hib_z$overwintering_stage == "larva"]),
+                                                  d_mod_hib_z$hours_data[d_mod_hib_z$overwintering_stage == "larva"]),
                               iter = n_iter, seed = 234,
                               LU_vars = c("Forest" = "prop_forest_500",
                                           "Grassland" = "prop_grassland_500",
@@ -1254,8 +1254,8 @@ l_mass_LU_pupa <- f_analysis_LU(formula = mass_tot ~
                                 C(bulbtype, "contr.sum") +
                                 n_trap +
                                 C(sample_previous, "contr.sum") +
-                                (1 | gr) +
-                                (1 | trap_ID) +
+                                (1 | spattemp_cluster) +
+                                (1 | LOC) +
                                 (1 | night_ID) +
                                 (1 | trap_ID_A),
                               data_z = d_mod_hib_z %>% filter(overwintering_stage == "pupa"),
@@ -1263,7 +1263,7 @@ l_mass_LU_pupa <- f_analysis_LU(formula = mass_tot ~
                               scalings = filter(d_scalings, data == "full"),
                               family = "hurdle_gamma",
                               hours_sel = which(d_mod_hib_z$traptype[d_mod_hib_z$overwintering_stage == "pupa"] == "p" &
-                                                  !d_mod_hib_z$estimate[d_mod_hib_z$overwintering_stage == "pupa"]),
+                                                  d_mod_hib_z$hours_data[d_mod_hib_z$overwintering_stage == "pupa"]),
                               iter = n_iter, seed = 15144,
                               LU_vars = c("Forest" = "prop_forest_500",
                                           "Grassland" = "prop_grassland_500",
@@ -1276,8 +1276,8 @@ l_mass_LU_adult <- f_analysis_LU(formula = mass_tot ~
                                 C(bulbtype, "contr.sum") +
                                 n_trap +
                                 C(sample_previous, "contr.sum") +
-                                (1 | gr) +
-                                (1 | trap_ID) +
+                                (1 | spattemp_cluster) +
+                                (1 | LOC) +
                                 (1 | night_ID) +
                                 (1 | trap_ID_A),
                               data_z = d_mod_hib_z %>% filter(overwintering_stage == "adult"),
@@ -1285,7 +1285,7 @@ l_mass_LU_adult <- f_analysis_LU(formula = mass_tot ~
                               scalings = filter(d_scalings, data == "full"),
                               family = "hurdle_gamma",
                               hours_sel = which(d_mod_hib_z$traptype[d_mod_hib_z$overwintering_stage == "adult"] == "p" &
-                                                  !d_mod_hib_z$estimate[d_mod_hib_z$overwintering_stage == "adult"]),
+                                                  d_mod_hib_z$hours_data[d_mod_hib_z$overwintering_stage == "adult"]),
                               iter = n_iter, seed = 621,
                               LU_vars = c("Forest" = "prop_forest_500",
                                           "Grassland" = "prop_grassland_500",
@@ -1306,8 +1306,8 @@ formula_full <- response ~
   C(bulbtype, "contr.sum") +
   n_trap +
   C(sample_previous, "contr.sum") +
-  (1 | gr) +
-  (1 | trap_ID) +
+  (1 | spattemp_cluster) +
+  (1 | LOC) +
   (1 | night_ID) +
   (1 | trap_ID_A)
 formula_full <- update(formula_full,
@@ -1490,7 +1490,7 @@ f_pred_fixed_diff(l_abu_LU_500$fit, d_mod_z, d_scalings |>
 l_plots_cov1_abu <- c(l_abu_LU_500$l_pred_fe, l_abu_LU_500$l_pred_sm) %>% 
   keep(names(.) %in% c("height", "P_2day", "T_2day", "yday")) %>%
   map(f_plot_pred, data = d_mod, response = "abu_tot", line.size = .75, 
-      hours_sel = which(d_mod_z$traptype == "p" & !d_mod_z$estimate))
+      hours_sel = which(d_mod_z$traptype == "p" & d_mod_z$hours_data))
 
 p <-
   l_plots_cov1_abu$yday +
@@ -1548,7 +1548,7 @@ grid_abu <- plot_grid(plotlist = l_plots_cov1_abu,
 l_plots_cov1_ric <- c(l_ric_LU_500$l_pred_fe, l_ric_LU_500$l_pred_sm) %>% 
   keep(names(.) %in% c("height", "P_2day", "T_2day", "yday")) %>%
   map(f_plot_pred, data = d_mod, response = "sric", line.size = .75, 
-      hours_sel = which(d_mod_z$traptype == "p" & !d_mod_z$estimate))
+      hours_sel = which(d_mod_z$traptype == "p" & d_mod_z$hours_data))
 
 p <-
   l_plots_cov1_ric$yday +
@@ -1601,7 +1601,7 @@ grid_ric <- plot_grid(plotlist = l_plots_cov1_ric,
 l_plots_cov1_mass <- c(l_mass_LU_500$l_pred_fe, l_mass_LU_500$l_pred_sm) %>% 
   keep(names(.) %in% c("height", "P_2day", "T_2day", "yday")) %>%
   map(f_plot_pred, data = d_mod, response = "mass_tot", line.size = .75, 
-      hours_sel = which(d_mod_z$traptype == "p" & !d_mod_z$estimate))
+      hours_sel = which(d_mod_z$traptype == "p" & d_mod_z$hours_data))
 
 p <-
   l_plots_cov1_mass$yday +
@@ -1665,7 +1665,7 @@ ggsave(p, file = "Output/Figures/Covariates_main_comb.pdf",
 l_plots_LU_abu <- c(l_abu_LU_500$l_pred_fe, l_abu_LU_500$l_pred_sm) %>% 
   keep(grepl("prop_", names(.))) %>%
   map(f_plot_pred, data = d_mod, response = "abu_tot", line.size = .75, 
-      hours_sel = which(d_mod_z$traptype == "p" & !d_mod_z$estimate))
+      hours_sel = which(d_mod_z$traptype == "p" & d_mod_z$hours_data))
 
 l_plots_LU_abu <- lapply(l_plots_LU_abu,
                          \(x) x +
@@ -1694,7 +1694,7 @@ grid_abu <- plot_grid(plotlist = l_plots_LU_abu,
 l_plots_LU_ric <- c(l_ric_LU_500$l_pred_fe, l_ric_LU_500$l_pred_sm) %>% 
   keep(grepl("prop_", names(.))) %>%
   map(f_plot_pred, data = d_mod, response = "sric", line.size = .75, 
-      hours_sel = which(d_mod_z$traptype == "p" & !d_mod_z$estimate))
+      hours_sel = which(d_mod_z$traptype == "p" & d_mod_z$hours_data))
 
 
 l_plots_LU_ric <- lapply(l_plots_LU_ric,
@@ -1726,7 +1726,7 @@ grid_ric <- plot_grid(plotlist = l_plots_LU_ric,
 l_plots_LU_mass <- c(l_mass_LU_500$l_pred_fe, l_mass_LU_500$l_pred_sm) %>% 
   keep(grepl("prop_", names(.))) %>%
   map(f_plot_pred, data = d_mod, response = "mass_tot", line.size = .75, 
-      hours_sel = which(d_mod_z$traptype == "p" & !d_mod_z$estimate))
+      hours_sel = which(d_mod_z$traptype == "p" & d_mod_z$hours_data))
 
 l_plots_LU_mass <- lapply(l_plots_LU_mass,
                           \(x) x +
@@ -1764,7 +1764,7 @@ ggsave(p, file = "Output/Figures/LU_comb.pdf",
 l_plots_cov2_abu <- c(l_abu_LU_500$l_pred_fe, l_abu_LU_500$l_pred_sm) %>% 
   keep(names(.) %in% c("traptype", "bulbtype", "n_trap", "active_hours", "sample_previous")) %>%
   map(f_plot_pred, data = d_mod, response = "abu_tot", line.size = .75, 
-      hours_sel = which(d_mod_z$traptype == "p" & !d_mod_z$estimate))
+      hours_sel = which(d_mod_z$traptype == "p" & d_mod_z$hours_data))
 
 l_plots_cov2_abu <- lapply(l_plots_cov2_abu,
                            \(x) x +
@@ -1794,7 +1794,7 @@ grid_abu_sup <- plot_grid(plotlist = l_plots_cov2_abu[c("traptype", "bulbtype",
 l_plots_cov2_ric <- c(l_ric_LU_500$l_pred_fe, l_ric_LU_500$l_pred_sm) %>% 
   keep(names(.) %in% c("traptype", "bulbtype", "n_trap", "active_hours", "sample_previous")) %>%
   map(f_plot_pred, data = d_mod, response = "sric", line.size = .75, 
-      hours_sel = which(d_mod_z$traptype == "p" & !d_mod_z$estimate))
+      hours_sel = which(d_mod_z$traptype == "p" & d_mod_z$hours_data))
 
 l_plots_cov2_ric <- lapply(l_plots_cov2_ric,
                            \(x) x +
@@ -1827,7 +1827,7 @@ grid_ric_sup <- plot_grid(plotlist = l_plots_cov2_ric[c("traptype", "bulbtype",
 l_plots_cov2_mass <- c(l_mass_LU_500$l_pred_fe, l_mass_LU_500$l_pred_sm) %>% 
   keep(names(.) %in% c("traptype", "bulbtype", "n_trap", "active_hours", "sample_previous")) %>%
   map(f_plot_pred, data = d_mod, response = "mass_tot", line.size = .75, 
-      hours_sel = which(d_mod_z$traptype == "p" & !d_mod_z$estimate))
+      hours_sel = which(d_mod_z$traptype == "p" & d_mod_z$hours_data))
 
 l_plots_cov2_mass <- lapply(l_plots_cov2_mass,
                             \(x) x +
@@ -1872,15 +1872,15 @@ l_abu_LU_500_R <- f_analysis_LU(formula = abu_tot ~
                                 C(bulbtype, "contr.sum") +
                                 n_trap +
                                 C(sample_previous, "contr.sum") +
-                                (1 | gr) +
-                                (1 | trap_ID) +
+                                (1 | spattemp_cluster) +
+                                (1 | LOC) +
                                 (1 | night_ID) +
                                 (1 | trap_ID_A),
                               data_z = d_mod_z,
                               data = d_mod,
                               scalings = filter(d_scalings, data == "full"),
                               family = "zero_inflated_negbinomial",
-                              hours_sel = which(d_mod_z$traptype == "p" & !d_mod_z$estimate),
+                              hours_sel = which(d_mod_z$traptype == "p" & d_mod_z$hours_data),
                               iter = n_iter, seed = 923,
                               LU_vars = c("Forest" = "prop_forest_500",
                                           "Grassland" = "prop_grassland_500",
@@ -1894,15 +1894,15 @@ l_ric_LU_500_R <- f_analysis_LU(formula = sric ~
                                 C(bulbtype, "contr.sum") +
                                 n_trap +
                                 C(sample_previous, "contr.sum") +
-                                (1 | gr) +
-                                (1 | trap_ID) +
+                                (1 | spattemp_cluster) +
+                                (1 | LOC) +
                                 (1 | night_ID) +
                                 (1 | trap_ID_A),
                               data_z = d_mod_z,
                               data = d_mod,
                               scalings = filter(d_scalings, data == "full"),
                               family = "zero_inflated_negbinomial",
-                              hours_sel = which(d_mod_z$traptype == "p" & !d_mod_z$estimate),
+                              hours_sel = which(d_mod_z$traptype == "p" & d_mod_z$hours_data),
                               iter = n_iter, seed = 87127,
                               LU_vars = c("Forest" = "prop_forest_500",
                                           "Grassland" = "prop_grassland_500",
@@ -1916,15 +1916,15 @@ l_mass_LU_500_R <- f_analysis_LU(formula = mass_tot ~
                                 C(bulbtype, "contr.sum") +
                                 n_trap +
                                 C(sample_previous, "contr.sum") +
-                                (1 | gr) +
-                                (1 | trap_ID) +
+                                (1 | spattemp_cluster) +
+                                (1 | LOC) +
                                 (1 | night_ID) +
                                 (1 | trap_ID_A),
                               data_z = d_mod_z,
                               data = d_mod,
                               scalings = filter(d_scalings, data == "full"),
                               family = "hurdle_gamma",
-                              hours_sel = which(d_mod_z$traptype == "p" & !d_mod_z$estimate),
+                              hours_sel = which(d_mod_z$traptype == "p" & d_mod_z$hours_data),
                               iter = n_iter, seed = 1411,
                               LU_vars = c("Forest" = "prop_forest_500",
                                           "Grassland" = "prop_grassland_500",
@@ -1943,8 +1943,8 @@ formula_full <- response ~
   C(bulbtype, "contr.sum") +
   n_trap +
   C(sample_previous, "contr.sum") +
-  (1 | gr) +
-  (1 | trap_ID) +
+  (1 | spattemp_cluster) +
+  (1 | LOC) +
   (1 | night_ID) +
   (1 | trap_ID_A)
 formula_full <- update(formula_full,
@@ -1958,7 +1958,7 @@ set.seed(23)
 m_mu <- f_mu_s2p1_r4(formula = formula_full,
                      fit = l_abu_LU_500_R$fit,
                      data = d_mod_z,
-                     hours_sel = which(d_mod_z$traptype == "p" & !d_mod_z$estimate))
+                     hours_sel = which(d_mod_z$traptype == "p" & d_mod_z$hours_data))
 
 
 m_ysim <- c()
@@ -1986,7 +1986,7 @@ d_check_abu <- data.frame(y = d_mod_z$abu_tot,
 m_mu <- f_mu_s2p1_r4(formula = update(formula_full, sric ~ .),
                      fit = l_ric_LU_500_R$fit,
                      data = d_mod_z,
-                     hours_sel = which(d_mod_z$traptype == "p" & !d_mod_z$estimate))
+                     hours_sel = which(d_mod_z$traptype == "p" & d_mod_z$hours_data))
 
 
 m_ysim <- c()
@@ -2014,7 +2014,7 @@ d_check_ric <- data.frame(y = d_mod_z$sric,
 m_mu <- f_mu_s2p1_r4(formula = update(formula_full, mass_tot ~ .),
                      fit = l_mass_LU_500_R$fit,
                      data = d_mod_z,
-                     hours_sel = which(d_mod_z$traptype == "p" & !d_mod_z$estimate))
+                     hours_sel = which(d_mod_z$traptype == "p" & d_mod_z$hours_data))
 
 
 m_ysim <- c()
@@ -2111,8 +2111,8 @@ formula <- response ~
   C(bulbtype, "contr.sum") +
   n_trap +
   C(sample_previous, "contr.sum") +
-  (1 | gr) +
-  (1 | trap_ID) +
+  (1 | spattemp_cluster) +
+  (1 | LOC) +
   (1 | night_ID) +
   (1 | trap_ID_A)
 

@@ -1,0 +1,66 @@
+"LOC" "A" "Samplingdate" "active_hours"
+"1" "Bellinzona, Via Sasso Corbaro" 2002 2002-02-22 9
+"2" "Bellinzona, Via Sasso Corbaro" 2003 2003-12-16 3
+"3" "Caslano, Mt. Caslano, Südostfuss, Uferweg" 2011 2011-12-20 NA
+"4" "Cevio, Bignasco, Süd, Wiese" 2015 2015-04-28 NA
+"5" "Gola di Lago, Sphagnetum" 2000 2000-11-17 3
+"6" "Gudo, Malacarne, Casa Romantica, Via Caneggio, Rebberg" 2010 2010-12-10 2
+"7" "Lauerz, Sägel" 1990 1990-03-07 4
+"8" "Lauerz, Sägel" 1991 1991-10-23 4
+"9" "Luzern, Gütschwald" 1986 1986-04-25 2
+"10" "Magliaso, Magliasina-Mündung" 2015 2015-12-10 NA
+"11" "Montfaucon, Montcenez" 2008 2008-03-09 2
+"12" "Montfaucon, Plain de Saigne" 2008 2008-03-09 2
+"13" "Olten, Rutigen (Nord), nördlich Altersheim [Ruttigen,Ruttiger]" 2014 2014-02-27 4
+"14" "Olten, Rutigen (Nord), nördlich Altersheim [Ruttigen,Ruttiger]" 2015 2015-01-13 4
+"15" "Olten, Rutigen (Nord), nördlich Altersheim [Ruttigen,Ruttiger]" 2015 2015-12-22 4
+"16" "Olten, Rutigen (Nord), nördlich Altersheim [Ruttigen,Ruttiger]" 2016 2016-01-09 5
+"17" "Olten, Rutigen (Nord), nördlich Altersheim [Ruttigen,Ruttiger]" 2016 2016-02-14 5
+"18" "Ponte Tresa / Pura, Mt. Rocchetta-Süd, Via ai Ronchi" 2018 2018-02-04 NA
+"19" "Reussdelta, Ried" 1998 1998-11-08 5
+"20" "Reussdelta, Ried" 1998 1998-11-16 5
+"21" "Reussdelta, Ried" 1999 1999-02-04 2
+"22" "Reussdelta, Ried" 1999 1999-03-02 2.5
+"23" "Reussdelta, Ried" 2000 2000-11-15 5.5
+"24" "Rüss-Spitz, Auenwald" 1988 1988-12-27 4
+"25" "Rüss-Spitz, Auenwald" 1989 1989-02-14 2.5
+"26" "Rüss-Spitz, Ried" 1988 1988-12-27 4
+"27" "Rüss-Spitz, Ried" 1989 1989-02-06 3.5
+"28" "Rüss-Spitz, Ried" 1989 1989-02-14 2.5
+"29" "Rüss-Spitz, Ried" 1989 1989-02-20 3.5
+"30" "Rüss-Spitz, Ried" 1989 1989-03-02 4.5
+"31" "Rüss-Spitz, Ried" 1989 1989-12-18 2
+"32" "Rüss-Spitz, Waldrand" 1988 1988-12-27 4
+"33" "Rüss-Spitz, Waldrand" 1989 1989-02-14 2.5
+"34" "Rüss-Spitz, Waldrand" 1989 1989-12-18 2
+"35" "Stabio, Laveggio-Ufer" 2001 2001-11-16 7
+"36" "Stans, Grossried, Gnappiried" 2009 2009-12-10 5
+"37" "Wauwil, Wauwilermoos, Ron-Ufer" 1995 1995-03-16 3
+"38" "Wauwil, Wauwilermoos, Ron-Ufer" 1995 1995-04-10 3
+"39" "Wauwil, Wauwilermoos, Ron-Ufer" 1996 1996-03-09 2
+"40" "Wauwil, Wauwilermoos, Ron-Ufer" 1997 1997-01-29 2
+"41" "Wauwil, Wauwilermoos, Schilfgebiet" 1995 1995-03-10 3
+"42" "Wauwil, Wauwilermoos, Schilfgebiet" 1995 1995-03-16 3
+"43" "Wauwil, Wauwilermoos, Schilfgebiet" 1995 1995-03-31 4
+"44" "Wauwil, Wauwilermoos, Schilfgebiet" 1995 1995-04-10 3
+"45" "Wauwil, Wauwilermoos, Schilfgebiet" 1995 1995-11-13 5
+"46" "Wauwil, Wauwilermoos, Schilfgebiet" 1996 1996-03-09 2
+"47" "Wauwil, Wauwilermoos, Schilfgebiet" 1996 1996-11-04 5
+"48" "Wauwil, Wauwilermoos, Schilfgebiet" 1996 1996-11-11 5
+"49" "Wauwil, Wauwilermoos, Schilfgebiet" 1996 1996-11-26 5
+"50" "Wauwil, Wauwilermoos, Schilfgebiet" 1996 1996-12-03 5
+"51" "Wauwil, Wauwilermoos, Schilfgebiet" 1997 1997-01-29 2
+"52" "Wauwil, Wauwilermoos, Schilfgebiet" 1997 1997-02-05 4
+"53" "Wauwil, Wauwilermoos, Schilfgebiet" 1997 1997-02-08 3
+"54" "Wauwil, Wauwilermoos, Schilfgebiet" 1997 1997-02-19 3
+"55" "Wauwil, Wauwilermoos, Schilfgebiet" 1997 1997-02-23 2
+"56" "Wauwil, Wauwilermoos, Wiese" 1995 1995-03-10 3
+"57" "Wauwil, Wauwilermoos, Wiese" 1995 1995-03-16 3
+"58" "Wauwil, Wauwilermoos, Wiese" 1995 1995-04-10 3
+"59" "Wauwil, Wauwilermoos, Wiese" 1995 1995-04-18 3
+"60" "Wauwil, Wauwilermoos, Wiese" 1996 1996-03-09 2
+"61" "Wauwil, Wauwilermoos, Wiese" 1996 1996-11-04 5
+"62" "Wauwil, Wauwilermoos, Wiese" 1996 1996-11-26 5
+"63" "Wauwil, Wauwilermoos, Wiese" 1997 1997-01-29 2
+"64" "Wauwil, Wauwilermoos, Wiese" 1997 1997-02-05 4
+"65" "Wauwil, Wauwilermoos, Wiese" 1997 1997-02-08 3

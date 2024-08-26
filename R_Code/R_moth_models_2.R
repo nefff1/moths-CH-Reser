@@ -65,24 +65,24 @@ f_analysis_A_height <- function(formula, data_z, scalings, family, iter, seed,
   
   if (family == "zero_inflated_negbinomial"){
     if (!is.null(hours_sel)){
-      mod <- stan(file = "Stan_splines/Stan_nb_spline_s1p1_r4.stan",
+      mod <- stan(file = "Stan_Code/Stan_nb_spline_s1p1_r4.stan",
                   data = l_data,
                   chains = 4, cores = 4,
                   iter = iter)
     } else {
-      mod <- stan(file = "Stan_splines/Stan_nb_spline_s1_r4.stan",
+      mod <- stan(file = "Stan_Code/Stan_nb_spline_s1_r4.stan",
                   data = l_data,
                   chains = 4, cores = 4,
                   iter = iter)
     }
   } else if (family == "hurdle_gamma"){
     if (!is.null(hours_sel)){
-      mod <- stan(file = "Stan_splines/Stan_hg_spline_s1p1_r4.stan",
+      mod <- stan(file = "Stan_Code/Stan_hg_spline_s1p1_r4.stan",
                   data = l_data,
                   chains = 4, cores = 4,
                   iter = iter)
     } else {
-      mod <- stan(file = "Stan_splines/Stan_hg_spline_s1_r4.stan",
+      mod <- stan(file = "Stan_Code/Stan_hg_spline_s1_r4.stan",
                   data = l_data,
                   chains = 4, cores = 4,
                   iter = iter)
@@ -571,8 +571,8 @@ f_A_height_incr_decr <- function(fit, data, scalings, formula = NULL,
       C(bulbtype, "contr.sum") +
       n_trap +
       C(sample_previous, "contr.sum") +
-      (1 | gr) +
-      (1 | trap_ID) +
+      (1 | spattemp_cluster) +
+      (1 | LOC) +
       (1 | night_ID) +
       (1 | trap_ID_A)
   }
@@ -726,14 +726,14 @@ l_abu_A <- f_analysis_A_height(formula = abu_tot ~
                                  C(bulbtype, "contr.sum") +
                                  n_trap +
                                  C(sample_previous, "contr.sum") +
-                                 (1 | gr) +
-                                 (1 | trap_ID) +
+                                 (1 | spattemp_cluster) +
+                                 (1 | LOC) +
                                  (1 | night_ID) +
                                  (1 | trap_ID_A),
                                data_z = d_mod_z,
                                scalings = filter(d_scalings, data == "full"),
                                family = "zero_inflated_negbinomial",
-                               hours_sel = which(d_mod_z$traptype == "p" & !d_mod_z$estimate),
+                               hours_sel = which(d_mod_z$traptype == "p" & d_mod_z$hours_data),
                                iter = n_iter, seed = 126)
 
 # richness ---------------------------------------------------------------------.
@@ -743,13 +743,13 @@ l_ric_A <- f_analysis_A_height(formula = sric ~
                                  C(bulbtype, "contr.sum") +
                                  n_trap +
                                  C(sample_previous, "contr.sum") +
-                                 (1 | gr) + (1 | trap_ID) +
+                                 (1 | spattemp_cluster) + (1 | LOC) +
                                  (1 | night_ID) +
                                  (1 | trap_ID_A),
                                data_z = d_mod_z,
                                scalings = filter(d_scalings, data == "full"),
                                family = "zero_inflated_negbinomial",
-                               hours_sel = which(d_mod_z$traptype == "p" & !d_mod_z$estimate),
+                               hours_sel = which(d_mod_z$traptype == "p" & d_mod_z$hours_data),
                                iter = n_iter, seed = 8989)
 
 # biomass ----------------------------------------------------------------------.
@@ -759,14 +759,14 @@ l_mass_A <- f_analysis_A_height(formula = mass_tot ~
                                   C(bulbtype, "contr.sum") +
                                   n_trap +
                                   C(sample_previous, "contr.sum") +
-                                  (1 | gr) +
-                                  (1 | trap_ID) +
+                                  (1 | spattemp_cluster) +
+                                  (1 | LOC) +
                                   (1 | night_ID) +
                                   (1 | trap_ID_A),
                                 data_z = d_mod_z,
                                 scalings = filter(d_scalings, data == "full"),
                                 family = "hurdle_gamma",
-                                hours_sel = which(d_mod_z$traptype == "p" & !d_mod_z$estimate),
+                                hours_sel = which(d_mod_z$traptype == "p" & d_mod_z$hours_data),
                                 iter = n_iter, seed = 811)
 
 # ... per body size group ######################################################
@@ -779,15 +779,15 @@ l_abu_A_small <- f_analysis_A_height(formula = abu_tot ~
                                        C(bulbtype, "contr.sum") +
                                        n_trap +
                                        C(sample_previous, "contr.sum") +
-                                       (1 | gr) +
-                                       (1 | trap_ID) +
+                                       (1 | spattemp_cluster) +
+                                       (1 | LOC) +
                                        (1 | night_ID) +
                                        (1 | trap_ID_A),
                                      data_z = d_mod_mass_z %>% filter(mass_cat == "small"),
                                      scalings = filter(d_scalings, data == "full"),
                                      family = "zero_inflated_negbinomial",
                                      hours_sel = which(d_mod_mass_z$traptype[d_mod_mass_z$mass_cat == "small"] == "p" &
-                                                         !d_mod_mass_z$estimate[d_mod_mass_z$mass_cat == "small"]),
+                                                         d_mod_mass_z$hours_data[d_mod_mass_z$mass_cat == "small"]),
                                      iter = n_iter, seed = 323)
 l_abu_A_medium <- f_analysis_A_height(formula = abu_tot ~
                                         s(yday) + P_2day + T_2day +
@@ -795,15 +795,15 @@ l_abu_A_medium <- f_analysis_A_height(formula = abu_tot ~
                                         C(bulbtype, "contr.sum") +
                                         n_trap +
                                         C(sample_previous, "contr.sum") +
-                                        (1 | gr) +
-                                        (1 | trap_ID) +
+                                        (1 | spattemp_cluster) +
+                                        (1 | LOC) +
                                         (1 | night_ID) +
                                         (1 | trap_ID_A),
                                       data_z = d_mod_mass_z %>% filter(mass_cat == "medium"),
                                       scalings = filter(d_scalings, data == "full"),
                                       family = "zero_inflated_negbinomial",
                                       hours_sel = which(d_mod_mass_z$traptype[d_mod_mass_z$mass_cat == "medium"] == "p" &
-                                                          !d_mod_mass_z$estimate[d_mod_mass_z$mass_cat == "medium"]),
+                                                          d_mod_mass_z$hours_data[d_mod_mass_z$mass_cat == "medium"]),
                                       iter = n_iter, seed = 963)
 l_abu_A_large <- f_analysis_A_height(formula = abu_tot ~
                                        s(yday) + P_2day + T_2day +
@@ -811,15 +811,15 @@ l_abu_A_large <- f_analysis_A_height(formula = abu_tot ~
                                        C(bulbtype, "contr.sum") +
                                        n_trap +
                                        C(sample_previous, "contr.sum") +
-                                       (1 | gr) +
-                                       (1 | trap_ID) +
+                                       (1 | spattemp_cluster) +
+                                       (1 | LOC) +
                                        (1 | night_ID) +
                                        (1 | trap_ID_A),
                                      data_z = d_mod_mass_z %>% filter(mass_cat == "large"),
                                      scalings = filter(d_scalings, data == "full"),
                                      family = "zero_inflated_negbinomial",
                                      hours_sel = which(d_mod_mass_z$traptype[d_mod_mass_z$mass_cat == "large"] == "p" &
-                                                         !d_mod_mass_z$estimate[d_mod_mass_z$mass_cat == "large"]),
+                                                         d_mod_mass_z$hours_data[d_mod_mass_z$mass_cat == "large"]),
                                      iter = n_iter, seed = 97)
 
 # richness ---------------------------------------------------------------------.
@@ -829,15 +829,15 @@ l_ric_A_small <- f_analysis_A_height(formula = sric ~
                                        C(bulbtype, "contr.sum") +
                                        n_trap +
                                        C(sample_previous, "contr.sum") +
-                                       (1 | gr) +
-                                       (1 | trap_ID) +
+                                       (1 | spattemp_cluster) +
+                                       (1 | LOC) +
                                        (1 | night_ID) +
                                        (1 | trap_ID_A),
                                      data_z = d_mod_mass_z %>% filter(mass_cat == "small"),
                                      scalings = filter(d_scalings, data == "full"),
                                      family = "zero_inflated_negbinomial",
                                      hours_sel = which(d_mod_mass_z$traptype[d_mod_mass_z$mass_cat == "small"] == "p" &
-                                                         !d_mod_mass_z$estimate[d_mod_mass_z$mass_cat == "small"]),
+                                                         d_mod_mass_z$hours_data[d_mod_mass_z$mass_cat == "small"]),
                                      iter = n_iter, seed = 8460)
 l_ric_A_medium <- f_analysis_A_height(formula = sric ~
                                         s(yday) + P_2day + T_2day +
@@ -845,15 +845,15 @@ l_ric_A_medium <- f_analysis_A_height(formula = sric ~
                                         C(bulbtype, "contr.sum") +
                                         n_trap +
                                         C(sample_previous, "contr.sum") +
-                                        (1 | gr) +
-                                        (1 | trap_ID) +
+                                        (1 | spattemp_cluster) +
+                                        (1 | LOC) +
                                         (1 | night_ID) +
                                         (1 | trap_ID_A),
                                       data_z = d_mod_mass_z %>% filter(mass_cat == "medium"),
                                       scalings = filter(d_scalings, data == "full"),
                                       family = "zero_inflated_negbinomial",
                                       hours_sel = which(d_mod_mass_z$traptype[d_mod_mass_z$mass_cat == "medium"] == "p" &
-                                                          !d_mod_mass_z$estimate[d_mod_mass_z$mass_cat == "medium"]),
+                                                          d_mod_mass_z$hours_data[d_mod_mass_z$mass_cat == "medium"]),
                                       iter = n_iter, seed = 510)
 l_ric_A_large <- f_analysis_A_height(formula = sric ~
                                        s(yday) + P_2day + T_2day +
@@ -861,15 +861,15 @@ l_ric_A_large <- f_analysis_A_height(formula = sric ~
                                        C(bulbtype, "contr.sum") +
                                        n_trap +
                                        C(sample_previous, "contr.sum") +
-                                       (1 | gr) +
-                                       (1 | trap_ID) +
+                                       (1 | spattemp_cluster) +
+                                       (1 | LOC) +
                                        (1 | night_ID) +
                                        (1 | trap_ID_A),
                                      data_z = d_mod_mass_z %>% filter(mass_cat == "large"),
                                      scalings = filter(d_scalings, data == "full"),
                                      family = "zero_inflated_negbinomial",
                                      hours_sel = which(d_mod_mass_z$traptype[d_mod_mass_z$mass_cat == "large"] == "p" &
-                                                         !d_mod_mass_z$estimate[d_mod_mass_z$mass_cat == "large"]),
+                                                         d_mod_mass_z$hours_data[d_mod_mass_z$mass_cat == "large"]),
                                      iter = n_iter, seed = 879)
 
 # biomass ----------------------------------------------------------------------.
@@ -879,15 +879,15 @@ l_mass_A_small <- f_analysis_A_height(formula = mass_tot ~
                                         C(bulbtype, "contr.sum") +
                                         n_trap +
                                         C(sample_previous, "contr.sum") +
-                                        (1 | gr) +
-                                        (1 | trap_ID) +
+                                        (1 | spattemp_cluster) +
+                                        (1 | LOC) +
                                         (1 | night_ID) +
                                         (1 | trap_ID_A),
                                       data_z = d_mod_mass_z %>% filter(mass_cat == "small"),
                                       scalings = filter(d_scalings, data == "full"),
                                       family = "hurdle_gamma",
                                       hours_sel = which(d_mod_mass_z$traptype[d_mod_mass_z$mass_cat == "small"] == "p" &
-                                                          !d_mod_mass_z$estimate[d_mod_mass_z$mass_cat == "small"]),
+                                                          d_mod_mass_z$hours_data[d_mod_mass_z$mass_cat == "small"]),
                                       iter = n_iter, seed = 2512)
 l_mass_A_medium <- f_analysis_A_height(formula = mass_tot ~
                                          s(yday) + P_2day + T_2day +
@@ -895,15 +895,15 @@ l_mass_A_medium <- f_analysis_A_height(formula = mass_tot ~
                                          C(bulbtype, "contr.sum") +
                                          n_trap +
                                          C(sample_previous, "contr.sum") +
-                                         (1 | gr) +
-                                         (1 | trap_ID) +
+                                         (1 | spattemp_cluster) +
+                                         (1 | LOC) +
                                          (1 | night_ID) +
                                          (1 | trap_ID_A),
                                        data_z = d_mod_mass_z %>% filter(mass_cat == "medium"),
                                        scalings = filter(d_scalings, data == "full"),
                                        family = "hurdle_gamma",
                                        hours_sel = which(d_mod_mass_z$traptype[d_mod_mass_z$mass_cat == "medium"] == "p" &
-                                                           !d_mod_mass_z$estimate[d_mod_mass_z$mass_cat == "medium"]),
+                                                           d_mod_mass_z$hours_data[d_mod_mass_z$mass_cat == "medium"]),
                                        iter = n_iter, seed = 1717)
 l_mass_A_large <- f_analysis_A_height(formula = mass_tot ~
                                         s(yday) + P_2day + T_2day +
@@ -911,15 +911,15 @@ l_mass_A_large <- f_analysis_A_height(formula = mass_tot ~
                                         C(bulbtype, "contr.sum") +
                                         n_trap +
                                         C(sample_previous, "contr.sum") +
-                                        (1 | gr) +
-                                        (1 | trap_ID) +
+                                        (1 | spattemp_cluster) +
+                                        (1 | LOC) +
                                         (1 | night_ID) +
                                         (1 | trap_ID_A),
                                       data_z = d_mod_mass_z %>% filter(mass_cat == "large"),
                                       scalings = filter(d_scalings, data == "full"),
                                       family = "hurdle_gamma",
                                       hours_sel = which(d_mod_mass_z$traptype[d_mod_mass_z$mass_cat == "large"] == "p" &
-                                                          !d_mod_mass_z$estimate[d_mod_mass_z$mass_cat == "large"]),
+                                                          d_mod_mass_z$hours_data[d_mod_mass_z$mass_cat == "large"]),
                                       iter = n_iter, seed = 112)
 
 # ... per temperature niche group ##############################################
@@ -932,15 +932,15 @@ l_abu_A_cold <- f_analysis_A_height(formula = abu_tot ~
                                       C(bulbtype, "contr.sum") +
                                       n_trap +
                                       C(sample_previous, "contr.sum") +
-                                      (1 | gr) +
-                                      (1 | trap_ID) +
+                                      (1 | spattemp_cluster) +
+                                      (1 | LOC) +
                                       (1 | night_ID) +
                                       (1 | trap_ID_A),
                                     data_z = d_mod_Tavg_z %>% filter(Tavg_mean_cat == "cold"),
                                     scalings = filter(d_scalings, data == "full"),
                                     family = "zero_inflated_negbinomial",
                                     hours_sel = which(d_mod_Tavg_z$traptype[d_mod_Tavg_z$Tavg_mean_cat == "cold"] == "p" &
-                                                        !d_mod_Tavg_z$estimate[d_mod_Tavg_z$Tavg_mean_cat == "cold"]),
+                                                        d_mod_Tavg_z$hours_data[d_mod_Tavg_z$Tavg_mean_cat == "cold"]),
                                     iter = n_iter, seed = 1688)
 l_abu_A_intermediate <- f_analysis_A_height(formula = abu_tot ~ height +
                                               s(yday) + P_2day + T_2day +
@@ -948,15 +948,15 @@ l_abu_A_intermediate <- f_analysis_A_height(formula = abu_tot ~ height +
                                               C(bulbtype, "contr.sum") +
                                               n_trap +
                                               C(sample_previous, "contr.sum") +
-                                              (1 | gr) +
-                                              (1 | trap_ID) +
+                                              (1 | spattemp_cluster) +
+                                              (1 | LOC) +
                                               (1 | night_ID) +
                                               (1 | trap_ID_A),
                                             data_z = d_mod_Tavg_z %>% filter(Tavg_mean_cat == "intermediate"),
                                             scalings = filter(d_scalings, data == "full"),
                                             family = "zero_inflated_negbinomial",
                                             hours_sel = which(d_mod_Tavg_z$traptype[d_mod_Tavg_z$Tavg_mean_cat == "intermediate"] == "p" &
-                                                                !d_mod_Tavg_z$estimate[d_mod_Tavg_z$Tavg_mean_cat == "intermediate"]),
+                                                                d_mod_Tavg_z$hours_data[d_mod_Tavg_z$Tavg_mean_cat == "intermediate"]),
                                             iter = n_iter, seed = 190)
 l_abu_A_warm <- f_analysis_A_height(formula = abu_tot ~ height +
                                       s(yday) + P_2day + T_2day +
@@ -964,15 +964,15 @@ l_abu_A_warm <- f_analysis_A_height(formula = abu_tot ~ height +
                                       C(bulbtype, "contr.sum") +
                                       n_trap +
                                       C(sample_previous, "contr.sum") +
-                                      (1 | gr) +
-                                      (1 | trap_ID) +
+                                      (1 | spattemp_cluster) +
+                                      (1 | LOC) +
                                       (1 | night_ID) +
                                       (1 | trap_ID_A),
                                     data_z = d_mod_Tavg_z %>% filter(Tavg_mean_cat == "warm"),
                                     scalings = filter(d_scalings, data == "full"),
                                     family = "zero_inflated_negbinomial",
                                     hours_sel = which(d_mod_Tavg_z$traptype[d_mod_Tavg_z$Tavg_mean_cat == "warm"] == "p" &
-                                                        !d_mod_Tavg_z$estimate[d_mod_Tavg_z$Tavg_mean_cat == "warm"]),
+                                                        d_mod_Tavg_z$hours_data[d_mod_Tavg_z$Tavg_mean_cat == "warm"]),
                                     iter = n_iter, seed = 1881)
 
 # richness ---------------------------------------------------------------------.
@@ -982,15 +982,15 @@ l_ric_A_cold <- f_analysis_A_height(formula = sric ~
                                       C(bulbtype, "contr.sum") +
                                       n_trap +
                                       C(sample_previous, "contr.sum") +
-                                      (1 | gr) +
-                                      (1 | trap_ID) +
+                                      (1 | spattemp_cluster) +
+                                      (1 | LOC) +
                                       (1 | night_ID) +
                                       (1 | trap_ID_A),
                                     data_z = d_mod_Tavg_z %>% filter(Tavg_mean_cat == "cold"),
                                     scalings = filter(d_scalings, data == "full"),
                                     family = "zero_inflated_negbinomial",
                                     hours_sel = which(d_mod_Tavg_z$traptype[d_mod_Tavg_z$Tavg_mean_cat == "cold"] == "p" &
-                                                        !d_mod_Tavg_z$estimate[d_mod_Tavg_z$Tavg_mean_cat == "cold"]),
+                                                        d_mod_Tavg_z$hours_data[d_mod_Tavg_z$Tavg_mean_cat == "cold"]),
                                     iter = n_iter, seed = 871)
 l_ric_A_intermediate <- f_analysis_A_height(formula = sric ~
                                               s(yday) + P_2day + T_2day +
@@ -998,15 +998,15 @@ l_ric_A_intermediate <- f_analysis_A_height(formula = sric ~
                                               C(bulbtype, "contr.sum") +
                                               n_trap +
                                               C(sample_previous, "contr.sum") +
-                                              (1 | gr) +
-                                              (1 | trap_ID) +
+                                              (1 | spattemp_cluster) +
+                                              (1 | LOC) +
                                               (1 | night_ID) +
                                               (1 | trap_ID_A),
                                             data_z = d_mod_Tavg_z %>% filter(Tavg_mean_cat == "intermediate"),
                                             scalings = filter(d_scalings, data == "full"),
                                             family = "zero_inflated_negbinomial",
                                             hours_sel = which(d_mod_Tavg_z$traptype[d_mod_Tavg_z$Tavg_mean_cat == "intermediate"] == "p" &
-                                                                !d_mod_Tavg_z$estimate[d_mod_Tavg_z$Tavg_mean_cat == "intermediate"]),
+                                                                d_mod_Tavg_z$hours_data[d_mod_Tavg_z$Tavg_mean_cat == "intermediate"]),
                                             iter = n_iter, seed = 111)
 l_ric_A_warm <- f_analysis_A_height(formula = sric ~
                                       s(yday) + P_2day + T_2day +
@@ -1014,15 +1014,15 @@ l_ric_A_warm <- f_analysis_A_height(formula = sric ~
                                       C(bulbtype, "contr.sum") +
                                       n_trap +
                                       C(sample_previous, "contr.sum") +
-                                      (1 | gr) +
-                                      (1 | trap_ID) +
+                                      (1 | spattemp_cluster) +
+                                      (1 | LOC) +
                                       (1 | night_ID) +
                                       (1 | trap_ID_A),
                                     data_z = d_mod_Tavg_z %>% filter(Tavg_mean_cat == "warm"),
                                     scalings = filter(d_scalings, data == "full"),
                                     family = "zero_inflated_negbinomial",
                                     hours_sel = which(d_mod_Tavg_z$traptype[d_mod_Tavg_z$Tavg_mean_cat == "warm"] == "p" &
-                                                        !d_mod_Tavg_z$estimate[d_mod_Tavg_z$Tavg_mean_cat == "warm"]),
+                                                        d_mod_Tavg_z$hours_data[d_mod_Tavg_z$Tavg_mean_cat == "warm"]),
                                     iter = n_iter, seed = 901)
 
 # richness ---------------------------------------------------------------------.
@@ -1031,45 +1031,45 @@ l_mass_A_cold <- f_analysis_A_height(formula = mass_tot ~  s(yday) + P_2day + T_
                                        C(bulbtype, "contr.sum") +
                                        n_trap +
                                        C(sample_previous, "contr.sum") +
-                                       (1 | gr) +
-                                       (1 | trap_ID) +
+                                       (1 | spattemp_cluster) +
+                                       (1 | LOC) +
                                        (1 | night_ID) +
                                        (1 | trap_ID_A),
                                      data_z = d_mod_Tavg_z %>% filter(Tavg_mean_cat == "cold"),
                                      scalings = filter(d_scalings, data == "full"),
                                      family = "hurdle_gamma",
                                      hours_sel = which(d_mod_Tavg_z$traptype[d_mod_Tavg_z$Tavg_mean_cat == "cold"] == "p" &
-                                                         !d_mod_Tavg_z$estimate[d_mod_Tavg_z$Tavg_mean_cat == "cold"]),
+                                                         d_mod_Tavg_z$hours_data[d_mod_Tavg_z$Tavg_mean_cat == "cold"]),
                                      iter = n_iter, seed = 964)
 l_mass_A_intermediate <- f_analysis_A_height(formula = mass_tot ~  s(yday) + P_2day + T_2day +
                                                C(traptype, "contr.sum") +
                                                C(bulbtype, "contr.sum") +
                                                n_trap +
                                                C(sample_previous, "contr.sum") +
-                                               (1 | gr) +
-                                               (1 | trap_ID) +
+                                               (1 | spattemp_cluster) +
+                                               (1 | LOC) +
                                                (1 | night_ID) +
                                                (1 | trap_ID_A),
                                              data_z = d_mod_Tavg_z %>% filter(Tavg_mean_cat == "intermediate"),
                                              scalings = filter(d_scalings, data == "full"),
                                              family = "hurdle_gamma",
                                              hours_sel = which(d_mod_Tavg_z$traptype[d_mod_Tavg_z$Tavg_mean_cat == "intermediate"] == "p" &
-                                                                 !d_mod_Tavg_z$estimate[d_mod_Tavg_z$Tavg_mean_cat == "intermediate"]),
+                                                                 d_mod_Tavg_z$hours_data[d_mod_Tavg_z$Tavg_mean_cat == "intermediate"]),
                                              iter = n_iter, seed = 111)
 l_mass_A_warm <- f_analysis_A_height(formula = mass_tot ~  s(yday) + P_2day + T_2day +
                                        C(traptype, "contr.sum") +
                                        C(bulbtype, "contr.sum") +
                                        n_trap +
                                        C(sample_previous, "contr.sum") +
-                                       (1 | gr) +
-                                       (1 | trap_ID) +
+                                       (1 | spattemp_cluster) +
+                                       (1 | LOC) +
                                        (1 | night_ID) +
                                        (1 | trap_ID_A),
                                      data_z = d_mod_Tavg_z %>% filter(Tavg_mean_cat == "warm"),
                                      scalings = filter(d_scalings, data == "full"),
                                      family = "hurdle_gamma",
                                      hours_sel = which(d_mod_Tavg_z$traptype[d_mod_Tavg_z$Tavg_mean_cat == "warm"] == "p" &
-                                                         !d_mod_Tavg_z$estimate[d_mod_Tavg_z$Tavg_mean_cat == "warm"]),
+                                                         d_mod_Tavg_z$hours_data[d_mod_Tavg_z$Tavg_mean_cat == "warm"]),
                                      iter = n_iter, seed = 255)
 
 # ... per specialisation group #################################################
@@ -1082,15 +1082,15 @@ l_abu_A_spec_m <- f_analysis_A_height(formula = abu_tot ~
                                         C(bulbtype, "contr.sum") +
                                         n_trap +
                                         C(sample_previous, "contr.sum") +
-                                        (1 | gr) +
-                                        (1 | trap_ID) +
+                                        (1 | spattemp_cluster) +
+                                        (1 | LOC) +
                                         (1 | night_ID) +
                                         (1 | trap_ID_A),
                                       data_z = d_mod_spec_z %>% filter(Spec == "Monophagous"),
                                       scalings = filter(d_scalings, data == "full"),
                                       family = "zero_inflated_negbinomial",
                                       hours_sel = which(d_mod_spec_z$traptype[d_mod_spec_z$Spec == "Monophagous"] == "p" &
-                                                          !d_mod_spec_z$estimate[d_mod_spec_z$Spec == "Monophagous"]),
+                                                          d_mod_spec_z$hours_data[d_mod_spec_z$Spec == "Monophagous"]),
                                       iter = n_iter, seed = 346)
 # l_abu_A_spec_o <- f_analysis_A_height(formula = abu_tot ~
                                         s(yday) + P_2day + T_2day +
@@ -1098,15 +1098,15 @@ l_abu_A_spec_m <- f_analysis_A_height(formula = abu_tot ~
                                         C(bulbtype, "contr.sum") +
                                         n_trap +
                                         C(sample_previous, "contr.sum") +
-                                        (1 | gr) +
-                                        (1 | trap_ID) +
+                                        (1 | spattemp_cluster) +
+                                        (1 | LOC) +
                                         (1 | night_ID) +
                                         (1 | trap_ID_A),
                                       data_z = d_mod_spec_z %>% filter(Spec == "Oligophagous"),
                                       scalings = filter(d_scalings, data == "full"),
                                       family = "zero_inflated_negbinomial",
                                       hours_sel = which(d_mod_spec_z$traptype[d_mod_spec_z$Spec == "Oligophagous"] == "p" &
-                                                          !d_mod_spec_z$estimate[d_mod_spec_z$Spec == "Oligophagous"]),
+                                                          d_mod_spec_z$hours_data[d_mod_spec_z$Spec == "Oligophagous"]),
                                       iter = n_iter, seed = 665)
 # l_abu_A_spec_p <- f_analysis_A_height(formula = abu_tot ~
                                         s(yday) + P_2day + T_2day +
@@ -1114,15 +1114,15 @@ l_abu_A_spec_m <- f_analysis_A_height(formula = abu_tot ~
                                         C(bulbtype, "contr.sum") +
                                         n_trap +
                                         C(sample_previous, "contr.sum") +
-                                        (1 | gr) +
-                                        (1 | trap_ID) +
+                                        (1 | spattemp_cluster) +
+                                        (1 | LOC) +
                                         (1 | night_ID) +
                                         (1 | trap_ID_A),
                                       data_z = d_mod_spec_z %>% filter(Spec == "Polyphagous"),
                                       scalings = filter(d_scalings, data == "full"),
                                       family = "zero_inflated_negbinomial",
                                       hours_sel = which(d_mod_spec_z$traptype[d_mod_spec_z$Spec == "Polyphagous"] == "p" &
-                                                          !d_mod_spec_z$estimate[d_mod_spec_z$Spec == "Polyphagous"]),
+                                                          d_mod_spec_z$hours_data[d_mod_spec_z$Spec == "Polyphagous"]),
                                       iter = n_iter, seed = 863)
 
 # richness ---------------------------------------------------------------------.
@@ -1132,15 +1132,15 @@ l_ric_A_spec_m <- f_analysis_A_height(formula = sric ~
                                         C(bulbtype, "contr.sum") +
                                         n_trap +
                                         C(sample_previous, "contr.sum") +
-                                        (1 | gr) +
-                                        (1 | trap_ID) +
+                                        (1 | spattemp_cluster) +
+                                        (1 | LOC) +
                                         (1 | night_ID) +
                                         (1 | trap_ID_A),
                                       data_z = d_mod_spec_z %>% filter(Spec == "Monophagous"),
                                       scalings = filter(d_scalings, data == "full"),
                                       family = "zero_inflated_negbinomial",
                                       hours_sel = which(d_mod_spec_z$traptype[d_mod_spec_z$Spec == "Monophagous"] == "p" &
-                                                          !d_mod_spec_z$estimate[d_mod_spec_z$Spec == "Monophagous"]),
+                                                          d_mod_spec_z$hours_data[d_mod_spec_z$Spec == "Monophagous"]),
                                       iter = n_iter, seed = 8132)
 l_ric_A_spec_o <- f_analysis_A_height(formula = sric ~
                                         s(yday) + P_2day + T_2day +
@@ -1148,15 +1148,15 @@ l_ric_A_spec_o <- f_analysis_A_height(formula = sric ~
                                         C(bulbtype, "contr.sum") +
                                         n_trap +
                                         C(sample_previous, "contr.sum") +
-                                        (1 | gr) +
-                                        (1 | trap_ID) +
+                                        (1 | spattemp_cluster) +
+                                        (1 | LOC) +
                                         (1 | night_ID) +
                                         (1 | trap_ID_A),
                                       data_z = d_mod_spec_z %>% filter(Spec == "Oligophagous"),
                                       scalings = filter(d_scalings, data == "full"),
                                       family = "zero_inflated_negbinomial",
                                       hours_sel = which(d_mod_spec_z$traptype[d_mod_spec_z$Spec == "Oligophagous"] == "p" &
-                                                          !d_mod_spec_z$estimate[d_mod_spec_z$Spec == "Oligophagous"]),
+                                                          d_mod_spec_z$hours_data[d_mod_spec_z$Spec == "Oligophagous"]),
                                       iter = n_iter, seed = 551)
 l_ric_A_spec_p <- f_analysis_A_height(formula = sric ~
                                         s(yday) + P_2day + T_2day +
@@ -1164,15 +1164,15 @@ l_ric_A_spec_p <- f_analysis_A_height(formula = sric ~
                                         C(bulbtype, "contr.sum") +
                                         n_trap +
                                         C(sample_previous, "contr.sum") +
-                                        (1 | gr) +
-                                        (1 | trap_ID) +
+                                        (1 | spattemp_cluster) +
+                                        (1 | LOC) +
                                         (1 | night_ID) +
                                         (1 | trap_ID_A),
                                       data_z = d_mod_spec_z %>% filter(Spec == "Polyphagous"),
                                       scalings = filter(d_scalings, data == "full"),
                                       family = "zero_inflated_negbinomial",
                                       hours_sel = which(d_mod_spec_z$traptype[d_mod_spec_z$Spec == "Polyphagous"] == "p" &
-                                                          !d_mod_spec_z$estimate[d_mod_spec_z$Spec == "Polyphagous"]),
+                                                          d_mod_spec_z$hours_data[d_mod_spec_z$Spec == "Polyphagous"]),
                                       iter = n_iter, seed = 918)
 
 # biomass ----------------------------------------------------------------------.
@@ -1182,15 +1182,15 @@ l_mass_A_spec_m <- f_analysis_A_height(formula = mass_tot ~
                                          C(bulbtype, "contr.sum") +
                                          n_trap +
                                          C(sample_previous, "contr.sum") +
-                                         (1 | gr) +
-                                         (1 | trap_ID) +
+                                         (1 | spattemp_cluster) +
+                                         (1 | LOC) +
                                          (1 | night_ID) +
                                          (1 | trap_ID_A),
                                        data_z = d_mod_spec_z %>% filter(Spec == "Monophagous"),
                                        scalings = filter(d_scalings, data == "full"),
                                        family = "hurdle_gamma",
                                        hours_sel = which(d_mod_spec_z$traptype[d_mod_spec_z$Spec == "Monophagous"] == "p" &
-                                                           !d_mod_spec_z$estimate[d_mod_spec_z$Spec == "Monophagous"]),
+                                                           d_mod_spec_z$hours_data[d_mod_spec_z$Spec == "Monophagous"]),
                                        iter = n_iter, seed = 810)
 l_mass_A_spec_o <- f_analysis_A_height(formula = mass_tot ~
                                          s(yday) + P_2day + T_2day +
@@ -1198,15 +1198,15 @@ l_mass_A_spec_o <- f_analysis_A_height(formula = mass_tot ~
                                          C(bulbtype, "contr.sum") +
                                          n_trap +
                                          C(sample_previous, "contr.sum") +
-                                         (1 | gr) +
-                                         (1 | trap_ID) +
+                                         (1 | spattemp_cluster) +
+                                         (1 | LOC) +
                                          (1 | night_ID) +
                                          (1 | trap_ID_A),
                                        data_z = d_mod_spec_z %>% filter(Spec == "Oligophagous"),
                                        scalings = filter(d_scalings, data == "full"),
                                        family = "hurdle_gamma",
                                        hours_sel = which(d_mod_spec_z$traptype[d_mod_spec_z$Spec == "Oligophagous"] == "p" &
-                                                           !d_mod_spec_z$estimate[d_mod_spec_z$Spec == "Oligophagous"]),
+                                                           d_mod_spec_z$hours_data[d_mod_spec_z$Spec == "Oligophagous"]),
                                        iter = n_iter, seed = 743)
 l_mass_A_spec_p <- f_analysis_A_height(formula = mass_tot ~
                                          s(yday) + P_2day + T_2day +
@@ -1214,15 +1214,15 @@ l_mass_A_spec_p <- f_analysis_A_height(formula = mass_tot ~
                                          C(bulbtype, "contr.sum") +
                                          n_trap +
                                          C(sample_previous, "contr.sum") +
-                                         (1 | gr) +
-                                         (1 | trap_ID) +
+                                         (1 | spattemp_cluster) +
+                                         (1 | LOC) +
                                          (1 | night_ID) +
                                          (1 | trap_ID_A),
                                        data_z = d_mod_spec_z %>% filter(Spec == "Polyphagous"),
                                        scalings = filter(d_scalings, data == "full"),
                                        family = "hurdle_gamma",
                                        hours_sel = which(d_mod_spec_z$traptype[d_mod_spec_z$Spec == "Polyphagous"] == "p" &
-                                                           !d_mod_spec_z$estimate[d_mod_spec_z$Spec == "Polyphagous"]),
+                                                           d_mod_spec_z$hours_data[d_mod_spec_z$Spec == "Polyphagous"]),
                                        iter = n_iter, seed = 822)
 
 # ... per overwintering stage ##################################################
@@ -1235,15 +1235,15 @@ l_abu_A_egg <- f_analysis_A_height(formula = abu_tot ~
                                       C(bulbtype, "contr.sum") +
                                       n_trap +
                                       C(sample_previous, "contr.sum") +
-                                      (1 | gr) +
-                                      (1 | trap_ID) +
+                                      (1 | spattemp_cluster) +
+                                      (1 | LOC) +
                                       (1 | night_ID) +
                                       (1 | trap_ID_A),
                                     data_z = d_mod_hib_z %>% filter(overwintering_stage == "egg"),
                                     scalings = filter(d_scalings, data == "full"),
                                     family = "zero_inflated_negbinomial",
                                     hours_sel = which(d_mod_hib_z$traptype[d_mod_hib_z$overwintering_stage == "egg"] == "p" &
-                                                        !d_mod_hib_z$estimate[d_mod_hib_z$overwintering_stage == "egg"]),
+                                                        d_mod_hib_z$hours_data[d_mod_hib_z$overwintering_stage == "egg"]),
                                     iter = n_iter, seed = 121)
 l_abu_A_larva <- f_analysis_A_height(formula = abu_tot ~
                                       s(yday) + P_2day + T_2day +
@@ -1251,15 +1251,15 @@ l_abu_A_larva <- f_analysis_A_height(formula = abu_tot ~
                                       C(bulbtype, "contr.sum") +
                                       n_trap +
                                       C(sample_previous, "contr.sum") +
-                                      (1 | gr) +
-                                      (1 | trap_ID) +
+                                      (1 | spattemp_cluster) +
+                                      (1 | LOC) +
                                       (1 | night_ID) +
                                       (1 | trap_ID_A),
                                     data_z = d_mod_hib_z %>% filter(overwintering_stage == "larva"),
                                     scalings = filter(d_scalings, data == "full"),
                                     family = "zero_inflated_negbinomial",
                                     hours_sel = which(d_mod_hib_z$traptype[d_mod_hib_z$overwintering_stage == "larva"] == "p" &
-                                                        !d_mod_hib_z$estimate[d_mod_hib_z$overwintering_stage == "larva"]),
+                                                        d_mod_hib_z$hours_data[d_mod_hib_z$overwintering_stage == "larva"]),
                                     iter = n_iter, seed = 442)
 l_abu_A_pupa <- f_analysis_A_height(formula = abu_tot ~
                                       s(yday) + P_2day + T_2day +
@@ -1267,15 +1267,15 @@ l_abu_A_pupa <- f_analysis_A_height(formula = abu_tot ~
                                       C(bulbtype, "contr.sum") +
                                       n_trap +
                                       C(sample_previous, "contr.sum") +
-                                      (1 | gr) +
-                                      (1 | trap_ID) +
+                                      (1 | spattemp_cluster) +
+                                      (1 | LOC) +
                                       (1 | night_ID) +
                                       (1 | trap_ID_A),
                                     data_z = d_mod_hib_z %>% filter(overwintering_stage == "pupa"),
                                     scalings = filter(d_scalings, data == "full"),
                                     family = "zero_inflated_negbinomial",
                                     hours_sel = which(d_mod_hib_z$traptype[d_mod_hib_z$overwintering_stage == "pupa"] == "p" &
-                                                        !d_mod_hib_z$estimate[d_mod_hib_z$overwintering_stage == "pupa"]),
+                                                        d_mod_hib_z$hours_data[d_mod_hib_z$overwintering_stage == "pupa"]),
                                     iter = n_iter, seed = 9877)
 l_abu_A_adult <- f_analysis_A_height(formula = abu_tot ~
                                       s(yday) + P_2day + T_2day +
@@ -1283,15 +1283,15 @@ l_abu_A_adult <- f_analysis_A_height(formula = abu_tot ~
                                       C(bulbtype, "contr.sum") +
                                       n_trap +
                                       C(sample_previous, "contr.sum") +
-                                      (1 | gr) +
-                                      (1 | trap_ID) +
+                                      (1 | spattemp_cluster) +
+                                      (1 | LOC) +
                                       (1 | night_ID) +
                                       (1 | trap_ID_A),
                                     data_z = d_mod_hib_z %>% filter(overwintering_stage == "adult"),
                                     scalings = filter(d_scalings, data == "full"),
                                     family = "zero_inflated_negbinomial",
                                     hours_sel = which(d_mod_hib_z$traptype[d_mod_hib_z$overwintering_stage == "adult"] == "p" &
-                                                        !d_mod_hib_z$estimate[d_mod_hib_z$overwintering_stage == "adult"]),
+                                                        d_mod_hib_z$hours_data[d_mod_hib_z$overwintering_stage == "adult"]),
                                     iter = n_iter, seed = 2111)
 
 # richness ---------------------------------------------------------------------.
@@ -1301,15 +1301,15 @@ l_ric_A_egg <- f_analysis_A_height(formula = sric ~
                                       C(bulbtype, "contr.sum") +
                                       n_trap +
                                       C(sample_previous, "contr.sum") +
-                                      (1 | gr) +
-                                      (1 | trap_ID) +
+                                      (1 | spattemp_cluster) +
+                                      (1 | LOC) +
                                       (1 | night_ID) +
                                       (1 | trap_ID_A),
                                     data_z = d_mod_hib_z %>% filter(overwintering_stage == "egg"),
                                     scalings = filter(d_scalings, data == "full"),
                                     family = "zero_inflated_negbinomial",
                                     hours_sel = which(d_mod_hib_z$traptype[d_mod_hib_z$overwintering_stage == "egg"] == "p" &
-                                                        !d_mod_hib_z$estimate[d_mod_hib_z$overwintering_stage == "egg"]),
+                                                        d_mod_hib_z$hours_data[d_mod_hib_z$overwintering_stage == "egg"]),
                                     iter = n_iter, seed = 12)
 l_ric_A_larva <- f_analysis_A_height(formula = sric ~
                                       s(yday) + P_2day + T_2day +
@@ -1317,15 +1317,15 @@ l_ric_A_larva <- f_analysis_A_height(formula = sric ~
                                       C(bulbtype, "contr.sum") +
                                       n_trap +
                                       C(sample_previous, "contr.sum") +
-                                      (1 | gr) +
-                                      (1 | trap_ID) +
+                                      (1 | spattemp_cluster) +
+                                      (1 | LOC) +
                                       (1 | night_ID) +
                                       (1 | trap_ID_A),
                                     data_z = d_mod_hib_z %>% filter(overwintering_stage == "larva"),
                                     scalings = filter(d_scalings, data == "full"),
                                     family = "zero_inflated_negbinomial",
                                     hours_sel = which(d_mod_hib_z$traptype[d_mod_hib_z$overwintering_stage == "larva"] == "p" &
-                                                        !d_mod_hib_z$estimate[d_mod_hib_z$overwintering_stage == "larva"]),
+                                                        d_mod_hib_z$hours_data[d_mod_hib_z$overwintering_stage == "larva"]),
                                     iter = n_iter, seed = 8797)
 l_ric_A_pupa <- f_analysis_A_height(formula = sric ~
                                       s(yday) + P_2day + T_2day +
@@ -1333,15 +1333,15 @@ l_ric_A_pupa <- f_analysis_A_height(formula = sric ~
                                       C(bulbtype, "contr.sum") +
                                       n_trap +
                                       C(sample_previous, "contr.sum") +
-                                      (1 | gr) +
-                                      (1 | trap_ID) +
+                                      (1 | spattemp_cluster) +
+                                      (1 | LOC) +
                                       (1 | night_ID) +
                                       (1 | trap_ID_A),
                                     data_z = d_mod_hib_z %>% filter(overwintering_stage == "pupa"),
                                     scalings = filter(d_scalings, data == "full"),
                                     family = "zero_inflated_negbinomial",
                                     hours_sel = which(d_mod_hib_z$traptype[d_mod_hib_z$overwintering_stage == "pupa"] == "p" &
-                                                        !d_mod_hib_z$estimate[d_mod_hib_z$overwintering_stage == "pupa"]),
+                                                        d_mod_hib_z$hours_data[d_mod_hib_z$overwintering_stage == "pupa"]),
                                     iter = n_iter, seed = 194)
 l_ric_A_adult <- f_analysis_A_height(formula = sric ~
                                       s(yday) + P_2day + T_2day +
@@ -1349,15 +1349,15 @@ l_ric_A_adult <- f_analysis_A_height(formula = sric ~
                                       C(bulbtype, "contr.sum") +
                                       n_trap +
                                       C(sample_previous, "contr.sum") +
-                                      (1 | gr) +
-                                      (1 | trap_ID) +
+                                      (1 | spattemp_cluster) +
+                                      (1 | LOC) +
                                       (1 | night_ID) +
                                       (1 | trap_ID_A),
                                     data_z = d_mod_hib_z %>% filter(overwintering_stage == "adult"),
                                     scalings = filter(d_scalings, data == "full"),
                                     family = "zero_inflated_negbinomial",
                                     hours_sel = which(d_mod_hib_z$traptype[d_mod_hib_z$overwintering_stage == "adult"] == "p" &
-                                                        !d_mod_hib_z$estimate[d_mod_hib_z$overwintering_stage == "adult"]),
+                                                        d_mod_hib_z$hours_data[d_mod_hib_z$overwintering_stage == "adult"]),
                                     iter = n_iter, seed = 654)
 
 # biomass ----------------------------------------------------------------------.
@@ -1367,15 +1367,15 @@ l_mass_A_egg <- f_analysis_A_height(formula = mass_tot ~
                                       C(bulbtype, "contr.sum") +
                                       n_trap +
                                       C(sample_previous, "contr.sum") +
-                                      (1 | gr) +
-                                      (1 | trap_ID) +
+                                      (1 | spattemp_cluster) +
+                                      (1 | LOC) +
                                       (1 | night_ID) +
                                       (1 | trap_ID_A),
                                     data_z = d_mod_hib_z %>% filter(overwintering_stage == "egg"),
                                     scalings = filter(d_scalings, data == "full"),
                                     family = "hurdle_gamma",
                                     hours_sel = which(d_mod_hib_z$traptype[d_mod_hib_z$overwintering_stage == "egg"] == "p" &
-                                                        !d_mod_hib_z$estimate[d_mod_hib_z$overwintering_stage == "egg"]),
+                                                        d_mod_hib_z$hours_data[d_mod_hib_z$overwintering_stage == "egg"]),
                                     iter = n_iter, seed = 537)
 l_mass_A_larva <- f_analysis_A_height(formula = mass_tot ~
                                       s(yday) + P_2day + T_2day +
@@ -1383,15 +1383,15 @@ l_mass_A_larva <- f_analysis_A_height(formula = mass_tot ~
                                       C(bulbtype, "contr.sum") +
                                       n_trap +
                                       C(sample_previous, "contr.sum") +
-                                      (1 | gr) +
-                                      (1 | trap_ID) +
+                                      (1 | spattemp_cluster) +
+                                      (1 | LOC) +
                                       (1 | night_ID) +
                                       (1 | trap_ID_A),
                                     data_z = d_mod_hib_z %>% filter(overwintering_stage == "larva"),
                                     scalings = filter(d_scalings, data == "full"),
                                     family = "hurdle_gamma",
                                     hours_sel = which(d_mod_hib_z$traptype[d_mod_hib_z$overwintering_stage == "larva"] == "p" &
-                                                        !d_mod_hib_z$estimate[d_mod_hib_z$overwintering_stage == "larva"]),
+                                                        d_mod_hib_z$hours_data[d_mod_hib_z$overwintering_stage == "larva"]),
                                     iter = n_iter, seed = 634)
 l_mass_A_pupa <- f_analysis_A_height(formula = mass_tot ~
                                       s(yday) + P_2day + T_2day +
@@ -1399,15 +1399,15 @@ l_mass_A_pupa <- f_analysis_A_height(formula = mass_tot ~
                                       C(bulbtype, "contr.sum") +
                                       n_trap +
                                       C(sample_previous, "contr.sum") +
-                                      (1 | gr) +
-                                      (1 | trap_ID) +
+                                      (1 | spattemp_cluster) +
+                                      (1 | LOC) +
                                       (1 | night_ID) +
                                       (1 | trap_ID_A),
                                     data_z = d_mod_hib_z %>% filter(overwintering_stage == "pupa"),
                                     scalings = filter(d_scalings, data == "full"),
                                     family = "hurdle_gamma",
                                     hours_sel = which(d_mod_hib_z$traptype[d_mod_hib_z$overwintering_stage == "pupa"] == "p" &
-                                                        !d_mod_hib_z$estimate[d_mod_hib_z$overwintering_stage == "pupa"]),
+                                                        d_mod_hib_z$hours_data[d_mod_hib_z$overwintering_stage == "pupa"]),
                                     iter = n_iter, seed = 19)
 l_mass_A_adult <- f_analysis_A_height(formula = mass_tot ~
                                       s(yday) + P_2day + T_2day +
@@ -1415,15 +1415,15 @@ l_mass_A_adult <- f_analysis_A_height(formula = mass_tot ~
                                       C(bulbtype, "contr.sum") +
                                       n_trap +
                                       C(sample_previous, "contr.sum") +
-                                      (1 | gr) +
-                                      (1 | trap_ID) +
+                                      (1 | spattemp_cluster) +
+                                      (1 | LOC) +
                                       (1 | night_ID) +
                                       (1 | trap_ID_A),
                                     data_z = d_mod_hib_z %>% filter(overwintering_stage == "adult"),
                                     scalings = filter(d_scalings, data == "full"),
                                     family = "hurdle_gamma",
                                     hours_sel = which(d_mod_hib_z$traptype[d_mod_hib_z$overwintering_stage == "adult"] == "p" &
-                                                        !d_mod_hib_z$estimate[d_mod_hib_z$overwintering_stage == "adult"]),
+                                                        d_mod_hib_z$hours_data[d_mod_hib_z$overwintering_stage == "adult"]),
                                     iter = n_iter, seed = 944)
 
 # ... sensitivity analyses #####################################################
@@ -1438,8 +1438,8 @@ l_abu_A_ne <- f_analysis_A_height(formula = abu_tot ~
                                     C(bulbtype, "contr.sum") +
                                     n_trap +
                                     C(sample_previous, "contr.sum") +
-                                    (1 | gr) +
-                                    (1 | trap_ID) +
+                                    (1 | spattemp_cluster) +
+                                    (1 | LOC) +
                                     (1 | night_ID) +
                                     (1 | trap_ID_A),
                                   data_z = d_mod_ne_z,
@@ -1454,8 +1454,8 @@ l_abu_A_lf <- f_analysis_A_height(formula = abu_tot ~
                                     C(traptype, "contr.sum") +
                                     C(bulbtype, "contr.sum") +
                                     C(sample_previous, "contr.sum") +
-                                    (1 | gr) +
-                                    (1 | trap_ID) +
+                                    (1 | spattemp_cluster) +
+                                    (1 | LOC) +
                                     (1 | night_ID) +
                                     (1 | trap_ID_A),
                                   data_z = d_mod_lf_z,
@@ -1470,14 +1470,14 @@ l_abu_A_p <- f_analysis_A_height(formula = abu_tot ~
                                    C(bulbtype, "contr.sum") +
                                    n_trap +
                                    C(sample_previous, "contr.sum") +
-                                   (1 | gr) +
-                                   (1 | trap_ID) +
+                                   (1 | spattemp_cluster) +
+                                   (1 | LOC) +
                                    (1 | night_ID) +
                                    (1 | trap_ID_A),
                                  data_z = d_mod_p_z,
                                  scalings = filter(d_scalings, data == "p"),
                                  family = "zero_inflated_negbinomial",
-                                 hours_sel = which(!d_mod_p_z$estimate),
+                                 hours_sel = which(d_mod_p_z$hours_data),
                                  iter = n_iter, seed = 6894)
 
 # richness ---------------------------------------------------------------------.
@@ -1489,8 +1489,8 @@ l_ric_A_ne <- f_analysis_A_height(formula = sric ~
                                     C(bulbtype, "contr.sum") +
                                     n_trap +
                                     C(sample_previous, "contr.sum") +
-                                    (1 | gr) +
-                                    (1 | trap_ID) +
+                                    (1 | spattemp_cluster) +
+                                    (1 | LOC) +
                                     (1 | night_ID) +
                                     (1 | trap_ID_A),
                                   data_z = d_mod_ne_z,
@@ -1504,7 +1504,7 @@ l_ric_A_lf <- f_analysis_A_height(formula = sric ~
                                     C(traptype, "contr.sum") +
                                     C(bulbtype, "contr.sum") +
                                     C(sample_previous, "contr.sum") +
-                                    (1 | gr) + (1 | trap_ID) +
+                                    (1 | spattemp_cluster) + (1 | LOC) +
                                     (1 | night_ID) +
                                     (1 | trap_ID_A),
                                   data_z = d_mod_lf_z,
@@ -1517,13 +1517,13 @@ l_ric_A_p <- f_analysis_A_height(formula = sric ~
                                    C(bulbtype, "contr.sum") +
                                    n_trap +
                                    C(sample_previous, "contr.sum") +
-                                   (1 | gr) + (1 | trap_ID) +
+                                   (1 | spattemp_cluster) + (1 | LOC) +
                                    (1 | night_ID) +
                                    (1 | trap_ID_A),
                                  data_z = d_mod_p_z,
                                  scalings = filter(d_scalings, data == "p"),
                                  family = "zero_inflated_negbinomial",
-                                 hours_sel = which(!d_mod_p_z$estimate),
+                                 hours_sel = which(d_mod_p_z$hours_data),
                                  iter = n_iter, seed = 6894)
 
 # biomass ----------------------------------------------------------------------.
@@ -1535,8 +1535,8 @@ l_mass_A_ne <- f_analysis_A_height(formula = mass_tot ~
                                      C(bulbtype, "contr.sum") +
                                      n_trap +
                                      C(sample_previous, "contr.sum") +
-                                     (1 | gr) +
-                                     (1 | trap_ID) +
+                                     (1 | spattemp_cluster) +
+                                     (1 | LOC) +
                                      (1 | night_ID) +
                                      (1 | trap_ID_A),
                                    data_z = d_mod_ne_z,
@@ -1551,8 +1551,8 @@ l_mass_A_lf <- f_analysis_A_height(formula = mass_tot ~
                                      C(traptype, "contr.sum") +
                                      C(bulbtype, "contr.sum") +
                                      C(sample_previous, "contr.sum") +
-                                     (1 | gr) +
-                                     (1 | trap_ID) +
+                                     (1 | spattemp_cluster) +
+                                     (1 | LOC) +
                                      (1 | night_ID) +
                                      (1 | trap_ID_A),
                                    data_z = d_mod_lf_z,
@@ -1566,14 +1566,14 @@ l_mass_A_p <- f_analysis_A_height(formula = mass_tot ~
                                     C(bulbtype, "contr.sum") +
                                     n_trap +
                                     C(sample_previous, "contr.sum") +
-                                    (1 | gr) +
-                                    (1 | trap_ID) +
+                                    (1 | spattemp_cluster) +
+                                    (1 | LOC) +
                                     (1 | night_ID) +
                                     (1 | trap_ID_A),
                                   data_z = d_mod_p_z,
                                   scalings = filter(d_scalings, data == "p"),
                                   family = "hurdle_gamma",
-                                  hours_sel = which(!d_mod_p_z$estimate),
+                                  hours_sel = which(d_mod_p_z$hours_data),
                                   iter = n_iter, seed = 6894)
 
 
@@ -1589,7 +1589,7 @@ f_A_height_change_numbers(l_abu_A$fit,
                                              C(traptype, "contr.sum") + 
                                              C(bulbtype, "contr.sum") + 
                                              n_trap + C(sample_previous, "contr.sum") + 
-                                             (1 | gr) + (1 | trap_ID) + 
+                                             (1 | spattemp_cluster) + (1 | LOC) + 
                                              (1 | night_ID) + (1 | trap_ID_A), 
                                            ". ~ A * height + ."))) |> 
   mutate(perc_estimate = (factor_estimate - 1) * 100,
@@ -1611,7 +1611,7 @@ f_A_height_change_numbers(l_ric_A$fit,
                                              C(traptype, "contr.sum") + 
                                              C(bulbtype, "contr.sum") + 
                                              n_trap + C(sample_previous, "contr.sum") + 
-                                             (1 | gr) + (1 | trap_ID) + 
+                                             (1 | spattemp_cluster) + (1 | LOC) + 
                                              (1 | night_ID) + (1 | trap_ID_A), 
                                            ". ~ A * height + ."))) |> 
   mutate(perc_estimate = (factor_estimate - 1) * 100,
@@ -1633,7 +1633,7 @@ f_A_height_change_numbers(l_mass_A$fit,
                                              C(traptype, "contr.sum") + 
                                              C(bulbtype, "contr.sum") + 
                                              n_trap + C(sample_previous, "contr.sum") + 
-                                             (1 | gr) + (1 | trap_ID) + 
+                                             (1 | spattemp_cluster) + (1 | LOC) + 
                                              (1 | night_ID) + (1 | trap_ID_A), 
                                            ". ~ A * height + ."))) |> 
   mutate(perc_estimate = (factor_estimate - 1) * 100,
@@ -1655,7 +1655,7 @@ f_A_height_change_numbers(l_abu_A_small$fit,
                                              C(traptype, "contr.sum") + 
                                              C(bulbtype, "contr.sum") + 
                                              n_trap + C(sample_previous, "contr.sum") + 
-                                             (1 | gr) + (1 | trap_ID) + 
+                                             (1 | spattemp_cluster) + (1 | LOC) + 
                                              (1 | night_ID) + (1 | trap_ID_A), 
                                            ". ~ A * height + ."))) |> 
   mutate(perc_estimate = (factor_estimate - 1) * 100,
@@ -1676,7 +1676,7 @@ f_A_height_change_numbers(l_mass_A_small$fit,
                                              C(traptype, "contr.sum") + 
                                              C(bulbtype, "contr.sum") + 
                                              n_trap + C(sample_previous, "contr.sum") + 
-                                             (1 | gr) + (1 | trap_ID) + 
+                                             (1 | spattemp_cluster) + (1 | LOC) + 
                                              (1 | night_ID) + (1 | trap_ID_A), 
                                            ". ~ A * height + ."))) |> 
   mutate(perc_estimate = (factor_estimate - 1) * 100,
@@ -1697,7 +1697,7 @@ f_A_height_change_numbers(l_abu_A_large$fit,
                                              C(traptype, "contr.sum") + 
                                              C(bulbtype, "contr.sum") + 
                                              n_trap + C(sample_previous, "contr.sum") + 
-                                             (1 | gr) + (1 | trap_ID) + 
+                                             (1 | spattemp_cluster) + (1 | LOC) + 
                                              (1 | night_ID) + (1 | trap_ID_A), 
                                            ". ~ A * height + ."))) |> 
   mutate(perc_estimate = (factor_estimate - 1) * 100,
@@ -1719,7 +1719,7 @@ f_A_height_change_numbers(l_abu_A_cold$fit,
                                              C(traptype, "contr.sum") + 
                                              C(bulbtype, "contr.sum") + 
                                              n_trap + C(sample_previous, "contr.sum") + 
-                                             (1 | gr) + (1 | trap_ID) + 
+                                             (1 | spattemp_cluster) + (1 | LOC) + 
                                              (1 | night_ID) + (1 | trap_ID_A), 
                                            ". ~ A * height + ."))) |> 
   mutate(perc_estimate = (factor_estimate - 1) * 100,
@@ -1740,7 +1740,7 @@ f_A_height_change_numbers(l_ric_A_cold$fit,
                                              C(traptype, "contr.sum") + 
                                              C(bulbtype, "contr.sum") + 
                                              n_trap + C(sample_previous, "contr.sum") + 
-                                             (1 | gr) + (1 | trap_ID) + 
+                                             (1 | spattemp_cluster) + (1 | LOC) + 
                                              (1 | night_ID) + (1 | trap_ID_A), 
                                            ". ~ A * height + ."))) |> 
   mutate(perc_estimate = (factor_estimate - 1) * 100,
@@ -1761,7 +1761,7 @@ f_A_height_change_numbers(l_mass_A_cold$fit,
                                              C(traptype, "contr.sum") + 
                                              C(bulbtype, "contr.sum") + 
                                              n_trap + C(sample_previous, "contr.sum") + 
-                                             (1 | gr) + (1 | trap_ID) + 
+                                             (1 | spattemp_cluster) + (1 | LOC) + 
                                              (1 | night_ID) + (1 | trap_ID_A), 
                                            ". ~ A * height + ."))) |> 
   mutate(perc_estimate = (factor_estimate - 1) * 100,
@@ -1782,7 +1782,7 @@ f_A_height_change_numbers(l_abu_A_spec_m$fit,
                                              C(traptype, "contr.sum") + 
                                              C(bulbtype, "contr.sum") + 
                                              n_trap + C(sample_previous, "contr.sum") + 
-                                             (1 | gr) + (1 | trap_ID) + 
+                                             (1 | spattemp_cluster) + (1 | LOC) + 
                                              (1 | night_ID) + (1 | trap_ID_A), 
                                            ". ~ A * height + ."))) |> 
   mutate(perc_estimate = (factor_estimate - 1) * 100,
@@ -1803,7 +1803,7 @@ f_A_height_change_numbers(l_ric_A_spec_m$fit,
                                              C(traptype, "contr.sum") + 
                                              C(bulbtype, "contr.sum") + 
                                              n_trap + C(sample_previous, "contr.sum") + 
-                                             (1 | gr) + (1 | trap_ID) + 
+                                             (1 | spattemp_cluster) + (1 | LOC) + 
                                              (1 | night_ID) + (1 | trap_ID_A), 
                                            ". ~ A * height + ."))) |> 
   mutate(perc_estimate = (factor_estimate - 1) * 100,
@@ -1824,7 +1824,7 @@ f_A_height_change_numbers(l_mass_A_spec_m$fit,
                                              C(traptype, "contr.sum") + 
                                              C(bulbtype, "contr.sum") + 
                                              n_trap + C(sample_previous, "contr.sum") + 
-                                             (1 | gr) + (1 | trap_ID) + 
+                                             (1 | spattemp_cluster) + (1 | LOC) + 
                                              (1 | night_ID) + (1 | trap_ID_A), 
                                            ". ~ A * height + ."))) |> 
   mutate(perc_estimate = (factor_estimate - 1) * 100,
@@ -1845,7 +1845,7 @@ f_A_height_change_numbers(l_abu_A_spec_o$fit,
                                              C(traptype, "contr.sum") + 
                                              C(bulbtype, "contr.sum") + 
                                              n_trap + C(sample_previous, "contr.sum") + 
-                                             (1 | gr) + (1 | trap_ID) + 
+                                             (1 | spattemp_cluster) + (1 | LOC) + 
                                              (1 | night_ID) + (1 | trap_ID_A), 
                                            ". ~ A * height + ."))) |> 
   mutate(perc_estimate = (factor_estimate - 1) * 100,
@@ -1866,7 +1866,7 @@ f_A_height_change_numbers(l_abu_A_pupa$fit,
                                              C(traptype, "contr.sum") + 
                                              C(bulbtype, "contr.sum") + 
                                              n_trap + C(sample_previous, "contr.sum") + 
-                                             (1 | gr) + (1 | trap_ID) + 
+                                             (1 | spattemp_cluster) + (1 | LOC) + 
                                              (1 | night_ID) + (1 | trap_ID_A), 
                                            ". ~ A * height + ."))) |> 
   mutate(perc_estimate = (factor_estimate - 1) * 100,
@@ -1887,7 +1887,7 @@ f_A_height_change_numbers(l_ric_A_pupa$fit,
                                              C(traptype, "contr.sum") + 
                                              C(bulbtype, "contr.sum") + 
                                              n_trap + C(sample_previous, "contr.sum") + 
-                                             (1 | gr) + (1 | trap_ID) + 
+                                             (1 | spattemp_cluster) + (1 | LOC) + 
                                              (1 | night_ID) + (1 | trap_ID_A), 
                                            ". ~ A * height + ."))) |> 
   mutate(perc_estimate = (factor_estimate - 1) * 100,
@@ -1908,7 +1908,7 @@ f_A_height_change_numbers(l_mass_A_pupa$fit,
                                              C(traptype, "contr.sum") + 
                                              C(bulbtype, "contr.sum") + 
                                              n_trap + C(sample_previous, "contr.sum") + 
-                                             (1 | gr) + (1 | trap_ID) + 
+                                             (1 | spattemp_cluster) + (1 | LOC) + 
                                              (1 | night_ID) + (1 | trap_ID_A), 
                                            ". ~ A * height + ."))) |> 
   mutate(perc_estimate = (factor_estimate - 1) * 100,
@@ -2700,8 +2700,8 @@ for (resp_i in c("abu", "ric", "mass")){
     C(bulbtype, "contr.sum") +
     n_trap +
     C(sample_previous, "contr.sum") +
-    (1 | gr) +
-    (1 | trap_ID) +
+    (1 | spattemp_cluster) +
+    (1 | LOC) +
     (1 | night_ID) +
     (1 | trap_ID_A)
   
@@ -2771,8 +2771,8 @@ for (resp_i in c("abu", "ric", "mass")){
     C(bulbtype, "contr.sum") +
     n_trap +
     C(sample_previous, "contr.sum") +
-    (1 | gr) +
-    (1 | trap_ID) +
+    (1 | spattemp_cluster) +
+    (1 | LOC) +
     (1 | night_ID) +
     (1 | trap_ID_A)
   
@@ -2843,8 +2843,8 @@ for (resp_i in c("abu", "ric", "mass")){
     C(traptype, "contr.sum") +
     C(bulbtype, "contr.sum") +
     C(sample_previous, "contr.sum") +
-    (1 | gr) +
-    (1 | trap_ID) +
+    (1 | spattemp_cluster) +
+    (1 | LOC) +
     (1 | night_ID) +
     (1 | trap_ID_A)
   
@@ -2915,8 +2915,8 @@ for (resp_i in c("abu", "ric", "mass")){
     C(bulbtype, "contr.sum") +
     n_trap +
     C(sample_previous, "contr.sum") + 
-    (1 | gr) + 
-    (1 | trap_ID) +
+    (1 | spattemp_cluster) + 
+    (1 | LOC) +
     (1 | night_ID) +
     (1 | trap_ID_A)
   
@@ -3015,8 +3015,8 @@ for (trait_i in unique(d_traits$trait)){
         C(bulbtype, "contr.sum") +
         n_trap +
         C(sample_previous, "contr.sum") +
-        (1 | gr) +
-        (1 | trap_ID) +
+        (1 | spattemp_cluster) +
+        (1 | LOC) +
         (1 | night_ID) +
         (1 | trap_ID_A)
       
