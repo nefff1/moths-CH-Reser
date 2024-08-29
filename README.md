@@ -4,7 +4,7 @@ This repository contains codes and some data that were used in the analyses for 
 
 -   Neff F, Chittaro Y, Korner-Nievergelt F, Litsios G, Rey E, Knop E. **Bimodal seasonal activity of moths and elevation, weather and land use as drivers of their diversity** (referred to as *manuscript 1*)
 
--   Neff F, Chittaro Y, Korner-Nievergelt F, Litsios G, Martínez-Núñez C, Rey E, Herzog F, Knop E. **Changes in moth communities across 50 years depend on elevation** (referred to as *manuscript 2*)
+-   Neff F, Chittaro Y, Korner-Nievergelt F, Litsios G, Martínez-Núñez C, Rey E, Knop E. **Changes in moth communities across 50 years depend on elevation and species traits** (referred to as *manuscript 2*)
 
 The following R files are included in the folder *R_Code*:
 
