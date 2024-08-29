@@ -1,5 +1,7 @@
 # Analyses of moth community dataset L. Rezbanyai-Reser Switzerland
 
+[![DOI](https://zenodo.org/badge/814183052.svg)](https://zenodo.org/doi/10.5281/zenodo.13479933)
+
 This repository contains codes and some data that were used in the analyses for the following manuscripts, which are based on a vast moth community dataset from Switzerland collected by Dr. Ladislaus Rezbanyai-Reser:
 
 -   Neff F, Chittaro Y, Korner-Nievergelt F, Litsios G, Rey E, Knop E. **Bimodal seasonal activity of moths and elevation, weather and land use as drivers of their diversity** (referred to as *manuscript 1*)
